@@ -1,0 +1,20 @@
+# Things Dad says when the kid comes close.
+# One phrase per line. Lines starting with # are ignored.
+# Add new lines, push, and Dad will start saying them.
+Hey buddy!
+High five!
+Want to play catch?
+Let's go for a drive!
+Race you to the backyard!
+Have you seen my keys?
+Who left the toys here?
+I'm making pancakes!
+Let's jump on the trampoline!
+Bedtime soon, champ.
+Did you finish your homework?
+Let's build something cool.
+Want to help me wash the car?
+I love you, kiddo!
+Do you want to play piano?
+Time to water the trees!
+Ready for an adventure?

@@ -1,11 +1,13 @@
 import * as THREE from 'three';
 import { buildHouse } from './house.js';
-import { createKid } from './kid.js';
+import { createKid } from './person.js';
 import { Input } from './input.js';
 import { resolveCollisions, cameraDistance } from './collision.js';
 import { stepVertical } from './physics.js';
 import { Hud } from './hud.js';
 import { loadLayout, setupLayoutPicker } from './layouts.js';
+import { NavGrid } from './nav.js';
+import { Npc, findSpots, loadNpcDefs } from './npc.js';
 
 const WALK_SPEED = 2.4; // m/s
 const BACK_SPEED = 1.5;
@@ -45,6 +47,19 @@ scene.add(house.group);
 
 const kid = createKid();
 scene.add(kid.group);
+
+// ---------- family NPCs ----------
+const nav = new NavGrid(house, data.rooms);
+const spots = findSpots(house, nav);
+const takenSpots = new Set();
+let npcs = [];
+try {
+  const defs = await loadNpcDefs();
+  const hudEl = document.getElementById('hud');
+  npcs = defs.map((def) => new Npc(def, { nav, spots, taken: takenSpots, rooms: data.rooms, walls: house.walls, scene, hudEl }));
+} catch (e) {
+  console.warn('No NPCs:', e);
+}
 
 // ---------- player state ----------
 const spawnYaw = FACING[data.spawn?.facing] ?? 0;
@@ -125,13 +140,15 @@ function update(dt) {
   if (input.run) speed *= RUN_FACTOR;
   player.x += Math.sin(player.yaw) * speed * dt;
   player.z += Math.cos(player.yaw) * speed * dt;
+  for (const npc of npcs) npc.pushAway(player);
   resolveCollisions(player, house.colliders);
 
   const groundY = stepVertical(player, house.colliders.boxes, dt, () => input.consumeJump());
 
   kid.update(dt, player.grounded ? speed : 0, player.x, player.z, player.yaw, player.y, groundY);
+  for (const npc of npcs) npc.update(dt, player, npcs.filter((o) => o !== npc));
   updateCamera(dt);
-  hud.update(player.x, player.z, player.yaw);
+  hud.update(player.x, player.z, player.yaw, npcs);
 }
 
 const clock = new THREE.Clock();
@@ -139,6 +156,7 @@ renderer.setAnimationLoop(() => {
   const dt = Math.min(clock.getDelta(), 0.05);
   update(dt);
   renderer.render(scene, camera);
+  for (const npc of npcs) npc.placeBubble(camera, innerWidth, innerHeight);
 });
 
 addEventListener('resize', () => {

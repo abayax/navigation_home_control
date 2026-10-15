@@ -146,18 +146,23 @@ const builders = {
   },
 
   // White crossover SUV, roughly a Tesla Model Y (4.75 x 1.92 x 1.62 m). Nose faces +z.
+  // Windows are see-through so people sitting inside are visible.
   suv({ color = '#f8f9fa' }, g) {
-    const glass = '#1b1f24';
+    const glass = new THREE.MeshLambertMaterial({ color: '#2b3a4a', transparent: true, opacity: 0.3, depthWrite: false });
+    const glassBox = (w, h, d, x, y, z) => {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), glass);
+      m.position.set(x, y, z);
+      g.add(m);
+      return m;
+    };
     box(g, 1.92, 0.62, 4.75, color, 0, 0.51, 0); // body
-    box(g, 1.72, 0.6, 2.5, color, 0, 1.12, -0.25); // cabin with white roof
-    for (const sx of [-1, 1]) box(g, 0.02, 0.38, 2.3, glass, sx * 0.865, 1.13, -0.25); // side windows
-    const windshield = box(g, 1.72, 0.05, Math.hypot(0.75, 0.6), glass, 0, 1.12, 1.375);
-    windshield.rotation.x = Math.atan2(0.6, 0.75);
-    const rear = box(g, 1.72, 0.05, Math.hypot(0.5, 0.52), glass, 0, 1.16, -1.75);
-    rear.rotation.x = -Math.atan2(0.52, 0.5);
     box(g, 1.92, 0.08, 1.2, color, 0, 0.84, 1.75); // hood
     box(g, 1.92, 0.1, 0.4, color, 0, 0.87, -2.18); // tailgate lip
+    box(g, 1.76, 0.05, 2.45, color, 0, 1.595, -0.25); // white roof
+    // Pillars (front, middle, rear) on both sides
     for (const sx of [-1, 1]) {
+      for (const [z, d] of [[0.95, 0.12], [-0.25, 0.14], [-1.45, 0.14]]) box(g, 0.06, 0.76, d, color, sx * 0.85, 1.2, z);
+      glassBox(0.02, 0.62, 2.3, sx * 0.855, 1.2, -0.25); // side windows
       box(g, 0.16, 0.1, 0.2, color, sx * 1.0, 0.98, 0.9); // mirrors
       box(g, 0.32, 0.05, 0.03, '#ffffff', sx * 0.62, 0.74, 2.38); // headlights
       for (const sz of [-1, 1]) {
@@ -166,7 +171,17 @@ const builders = {
         const rim = cyl(g, 0.23, 0.23, 0.27, '#9aa0a6', sx * 0.86, 0.36, sz * 1.45, 16);
         rim.rotation.z = Math.PI / 2;
       }
+      // Front seat backs (driver on the +x side) and a rear bench
+      box(g, 0.5, 0.6, 0.12, '#3d3d3d', sx * 0.4, 1.12, -0.12);
     }
+    box(g, 1.5, 0.5, 0.12, '#3d3d3d', 0, 1.07, -1.15);
+    const windshield = glassBox(1.7, 0.02, Math.hypot(0.75, 0.74), 0, 1.21, 1.375);
+    windshield.rotation.x = Math.atan2(0.74, 0.75);
+    const rear = glassBox(1.7, 0.02, Math.hypot(0.5, 0.66), 0, 1.25, -1.75);
+    rear.rotation.x = -Math.atan2(0.66, 0.5);
+    const wheel = part(g, new THREE.TorusGeometry(0.17, 0.025, 8, 20), '#222222', 0.4, 1.05, 0.62);
+    wheel.rotation.x = -0.5;
+    box(g, 1.7, 0.12, 0.35, '#3d3d3d', 0, 0.88, 0.85); // dashboard
     box(g, 1.6, 0.05, 0.03, '#e63946', 0, 0.86, -2.39); // tail light bar
     box(g, 0.13, 0.025, 0.02, '#adb5bd', 0, 0.86, 2.385); // "T" logo
     box(g, 0.025, 0.1, 0.02, '#adb5bd', 0, 0.81, 2.385);
@@ -310,6 +325,12 @@ const TOPS = {
   bookshelf: (item) => item.height ?? 1.8,
 };
 const BOUNCY = new Set(['trampoline']);
+
+// Where people sit inside an SUV, in the car's local frame (driver on the +x side)
+export const SUV_SEATS = [
+  { x: 0.4, z: 0.12, door: { x: 1.45, z: 0.12 } },
+  { x: -0.4, z: 0.12, door: { x: -1.45, z: 0.12 } },
+];
 
 export function buildFurniture(item) {
   const builder = builders[item.type];

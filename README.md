@@ -35,6 +35,14 @@ Options: `--layout office` opens straight into a layout, `--no-browser` just ser
 
 Jumping: the kid jumps about 1 m and can land on beds, couches, chairs, tables, desks, counters and benches. Walk off the edge to get down. Taller things (fridge, bookshelves, TV, cars, trees) are out of reach, and walls and fences always block. The trampoline keeps bouncing; jump while bouncing to go much higher.
 
+## Family (Mom and Dad)
+
+Mom and Dad walk around the whole place on their own: rooms, backyard, front yard, driveway. Every so often each picks something to do: sit on a chair, couch, bed or bench; stand at the kitchen counter, fridge, sink, a bookshelf or in front of the TV; sit in the car (you can see them through the window); or wander somewhere and pause. They show up as coloured dots on the minimap.
+
+When the kid gets close (about 2 m, not through a wall), a speech bubble pops up with something they say. Stay close and they say something new every few seconds.
+
+**Changing what they say:** edit `npcs/mom.txt` or `npcs/dad.txt`, one phrase per line (lines starting with `#` are comments), then push. The game reads these files fresh every time it loads (GitHub Pages may take up to ~10 minutes to serve the new version). Their look (colours, height, hair, glasses) is in `npcs/npcs.json`; add another entry there with its own phrase file to add another family member.
+
 ## Files
 
 | File | What it does |
@@ -47,10 +55,14 @@ Jumping: the kid jumps about 1 m and can land on beds, couches, chairs, tables, 
 | `src/layouts.js` | Loads the chosen layout and builds the 🏠 picker |
 | `src/house.js` | Builds floors, walls, door openings and the backyard fence from the JSON |
 | `src/furniture.js` | Simple kid-style furniture (bed, sofa, car, tree, slide…) |
-| `src/kid.js` | The character and its walking animation |
 | `src/input.js` | Keyboard, touch buttons, swipes |
 | `src/collision.js` | Solid walls and furniture, keeps the camera inside rooms |
 | `src/physics.js` | Jumping, gravity, landing on furniture, trampoline bounces |
+| `src/person.js` | The kid and the adults (shared cartoon person model, walking/sitting/jumping poses) |
+| `src/npc.js` | Mom and Dad: choosing what to do, walking, sitting, the car, speech bubbles |
+| `src/nav.js` | Walkable grid + A* path finding used by the NPCs |
+| `npcs/npcs.json` | Who the NPCs are and what they look like |
+| `npcs/*.txt` | What each NPC says (one phrase per line) |
 | `src/hud.js` | Room-name badge and minimap |
 
 ## Layouts
@@ -63,7 +75,7 @@ Each floor plan becomes its own layout and is saved locally. New visitors start 
 3. Claude writes `layouts/office/layout.json`, adds it to `layouts/index.json`, and runs the validator.
 4. Reload the game. The new layout is in the 🏠 picker.
 
-Check all layouts any time with `node tools/validate-layout.mjs`.
+Check all layouts (and the NPC files) any time with `node tools/validate-layout.mjs`.
 
 **Measuring with the iOS Measure app:**
 - Sketch the floor plan on paper (or in Notes), roughly to shape. Boxes for rooms are fine.

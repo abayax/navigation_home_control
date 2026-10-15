@@ -71,7 +71,7 @@ export class Hud {
     return [(x - this.minX) * this.scale, (z - this.minZ) * this.scale];
   }
 
-  update(x, z, yaw) {
+  update(x, z, yaw, npcs = []) {
     const room = roomAt(this.rooms, x, z);
     const name = room ? room.name : 'Outside';
     if (name !== this.current) {
@@ -85,6 +85,18 @@ export class Hud {
     const ctx = this.ctx;
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     ctx.drawImage(this.base, 0, 0);
+
+    // Family members as coloured dots
+    for (const npc of npcs) {
+      const [nx, ny] = this.toMap(npc.x, npc.z);
+      ctx.fillStyle = npc.color;
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(nx, ny, Math.max(4, 0.5 * this.scale), 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    }
 
     // Player arrow
     const [px, py] = this.toMap(x, z);

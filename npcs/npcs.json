@@ -1,0 +1,21 @@
+{
+  "npcs": [
+    {
+      "id": "mom",
+      "name": "Mom",
+      "phrases": "mom.txt",
+      "scale": 1.3,
+      "hair": "long",
+      "colors": { "skin": "#f5c9a8", "hair": "#3b2417", "shirt": "#e56b9f", "pants": "#5a4fcf", "shoes": "#ffffff" }
+    },
+    {
+      "id": "dad",
+      "name": "Dad",
+      "phrases": "dad.txt",
+      "scale": 1.38,
+      "hair": "short",
+      "glasses": true,
+      "colors": { "skin": "#f1c27d", "hair": "#2b1d14", "shirt": "#3a86ff", "pants": "#495057", "shoes": "#333333" }
+    }
+  ]
+}

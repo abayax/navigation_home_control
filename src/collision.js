@@ -81,3 +81,18 @@ export function supportAt(boxes, x, z, maxTop) {
   }
   return { height, box };
 }
+
+/** True if the straight line a -> b crosses a wall. */
+export function lineBlocked(ax, az, bx, bz, walls) {
+  const dx = bx - ax, dz = bz - az;
+  for (const s of walls) {
+    const ex = s.bx - s.ax, ez = s.bz - s.az;
+    const denom = dx * ez - dz * ex;
+    if (Math.abs(denom) < 1e-9) continue;
+    const wx = s.ax - ax, wz = s.az - az;
+    const t = (wx * ez - wz * ex) / denom;
+    const u = (wx * dz - wz * dx) / denom;
+    if (t > 0 && t < 1 && u >= 0 && u <= 1) return true;
+  }
+  return false;
+}

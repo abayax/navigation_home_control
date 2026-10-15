@@ -176,4 +176,31 @@ for (const file of files) {
   for (const e of errors) console.log(`  ✗ ${e}`);
   if (errors.length) failed = true;
 }
+// --- NPCs: npcs/npcs.json and their phrase files ---
+{
+  const npcFile = resolve(root, 'npcs/npcs.json');
+  const errs = [];
+  let lines = [];
+  if (existsSync(npcFile)) {
+    try {
+      const { npcs } = JSON.parse(readFileSync(npcFile, 'utf8'));
+      if (!Array.isArray(npcs)) errs.push('"npcs" must be a list');
+      for (const n of npcs ?? []) {
+        if (!n.name) errs.push('An NPC has no name');
+        const pf = resolve(root, 'npcs', n.phrases ?? '');
+        if (!n.phrases || !existsSync(pf)) { errs.push(`${n.name}: phrase file "${n.phrases}" not found in npcs/`); continue; }
+        const count = readFileSync(pf, 'utf8').split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !l.startsWith('#')).length;
+        if (!count) errs.push(`${n.name}: ${n.phrases} has no phrases`);
+        lines.push(`    ${n.name.padEnd(22)} ${String(count).padStart(4)} phrases (${n.phrases})`);
+      }
+    } catch (e) {
+      errs.push(`npcs.json is not valid JSON: ${e.message}`);
+    }
+    console.log(`\n${errs.length ? '✗' : '✓'} npcs/npcs.json`);
+    for (const l of lines) console.log(l);
+    for (const e of errs) console.log(`  ✗ ${e}`);
+    if (errs.length) failed = true;
+  }
+}
+
 process.exit(failed ? 1 : 0);

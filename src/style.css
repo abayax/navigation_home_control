@@ -100,6 +100,50 @@ body {
   opacity: 0;
 }
 
+/* ---- NPC speech bubbles ---- */
+
+.bubble {
+  position: absolute;
+  left: 0;
+  top: 0;
+  max-width: 220px;
+  padding: 8px 14px 10px;
+  background: #fff;
+  color: #333;
+  border-radius: 16px;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+  will-change: transform;
+}
+
+.bubble.show {
+  opacity: 1;
+}
+
+.bubble::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -10px;
+  margin-left: -10px;
+  border: 10px solid transparent;
+  border-top-color: #fff;
+  border-bottom: 0;
+}
+
+.bubble .name {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  color: #4a3b8f;
+}
+
 /* ---- Layout picker ---- */
 
 #layout-panel {

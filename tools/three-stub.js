@@ -1,6 +1,6 @@
 // Minimal stand-in for three.js so house.js / furniture.js can run under Node
 // for validation (geometry is ignored; only the 2D layout logic matters).
-const vec = () => ({ x: 0, y: 0, z: 0, set() { return this; } });
+const vec = () => ({ x: 0, y: 0, z: 0, set() { return this; }, setScalar() { return this; } });
 
 export class Object3D {
   constructor() {

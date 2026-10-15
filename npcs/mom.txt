@@ -1,0 +1,21 @@
+# Things Mom says when the kid comes close.
+# One phrase per line. Lines starting with # are ignored.
+# Add new lines, push, and Mom will start saying them.
+Hi sweetie!
+I love you!
+Did you brush your teeth?
+Wash your hands, please!
+Dinner is almost ready!
+Who wants a snack?
+Let's read a book together.
+Careful on the trampoline!
+Please don't jump on the couch!
+Time for a bath soon.
+Can you help me clean up the toys?
+Give me a big hug!
+What did you do today?
+Drink some water, honey.
+Let's go play in the backyard!
+Bedtime in ten minutes.
+You're my favorite kid!
+Where are your shoes?
