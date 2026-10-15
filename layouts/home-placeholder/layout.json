@@ -1,0 +1,89 @@
+{
+  "name": "Home (placeholder)",
+  "units": "meters. x grows to the east, z grows to the south. rect = [x0, z0, x1, z1]",
+  "source": null,
+  "notes": "Made-up layout with the right rooms, to be replaced by real measurements.",
+  "wallHeight": 2.6,
+  "spawn": { "at": [21, 15.5], "facing": "north" },
+
+  "rooms": [
+    { "name": "Bedroom 1",      "rect": [0, 0, 7, 8],     "floor": "#ffc8dd", "pattern": "carpet" },
+    { "name": "Bathroom 1",     "rect": [7, 0, 11, 8],    "floor": "#bde0fe", "pattern": "tile" },
+    { "name": "Bedroom 2",      "rect": [11, 0, 18, 8],   "floor": "#cdb4db", "pattern": "carpet" },
+    { "name": "Master Bedroom", "rect": [18, 0, 26, 8],   "floor": "#ffd6a5", "pattern": "carpet" },
+    { "name": "Bathroom 2",     "rect": [26, 0, 30, 8],   "floor": "#a2d2ff", "pattern": "tile" },
+    { "name": "Hallway",        "rect": [0, 8, 30, 10],   "floor": "#e9c46a", "pattern": "wood" },
+    { "name": "Family Room",    "rect": [0, 10, 9, 18],   "floor": "#d4a373", "pattern": "wood" },
+    { "name": "Kitchen",        "rect": [9, 10, 17, 18],  "floor": "#fdffb6", "pattern": "tile" },
+    { "name": "Living Room",    "rect": [17, 10, 30, 18], "floor": "#e0b98a", "pattern": "wood" },
+    { "name": "Garage",         "rect": [30, 8, 37, 18],  "floor": "#c9ccd1", "pattern": "concrete" },
+    { "name": "Backyard",       "rect": [0, 18, 30, 30],  "floor": "#8bd16a", "pattern": "grass", "outdoor": true }
+  ],
+
+  "doors": [
+    { "at": [3.5, 8],  "width": 1.0 },
+    { "at": [9, 8],    "width": 0.9 },
+    { "at": [14.5, 8], "width": 1.0 },
+    { "at": [22, 8],   "width": 1.0 },
+    { "at": [28, 8],   "width": 0.9 },
+    { "at": [4.5, 10], "width": 4.0 },
+    { "at": [13, 10],  "width": 3.0 },
+    { "at": [23.5, 10], "width": 5.0 },
+    { "at": [9, 14],   "width": 4.0 },
+    { "at": [17, 14],  "width": 3.0 },
+    { "at": [30, 9],   "width": 1.0 },
+    { "at": [4.5, 18], "width": 1.8 },
+    { "at": [23.5, 18], "width": 2.0 }
+  ],
+
+  "furniture": [
+    { "type": "bed", "at": [2, 1.15], "color": "#ff8fab" },
+    { "type": "toyBox", "at": [5.8, 0.5], "color": "#ffbe0b" },
+    { "type": "rug", "at": [3.5, 4.5], "color": "#ffafcc" },
+    { "type": "plant", "at": [6.5, 7.4] },
+
+    { "type": "tub", "at": [9, 0.5] },
+    { "type": "toilet", "at": [7.45, 4], "rot": 90 },
+    { "type": "sink", "at": [10.65, 4], "rot": -90 },
+
+    { "type": "bed", "at": [14.5, 1.15], "color": "#9d8df1" },
+    { "type": "toyBox", "at": [17.4, 0.5], "color": "#3a86ff" },
+    { "type": "rug", "at": [14.5, 4.5], "color": "#b8c0ff" },
+    { "type": "desk", "at": [11.4, 6], "rot": 90 },
+
+    { "type": "bed", "at": [22, 1.2], "size": [2.0, 2.2], "color": "#f4a261" },
+    { "type": "plant", "at": [25.5, 0.5] },
+    { "type": "rug", "at": [22, 4.8], "radius": 1.5, "color": "#ffe5b4" },
+
+    { "type": "tub", "at": [28, 0.5] },
+    { "type": "toilet", "at": [26.45, 4], "rot": 90 },
+    { "type": "sink", "at": [29.65, 4], "rot": -90 },
+
+    { "type": "sofa", "at": [0.55, 14], "rot": 90, "size": [2.4, 0.9], "color": "#ef476f" },
+    { "type": "coffeeTable", "at": [2.3, 14], "rot": 90 },
+    { "type": "rug", "at": [2.8, 14], "radius": 1.8, "color": "#ffd166" },
+    { "type": "plant", "at": [0.5, 17.5] },
+    { "type": "toyBox", "at": [8.3, 17.5], "color": "#06d6a0" },
+
+    { "type": "counter", "at": [13, 17.6], "size": [6, 0.65] },
+    { "type": "fridge", "at": [16.5, 10.5] },
+    { "type": "counter", "at": [13, 14], "size": [2.4, 1.0], "color": "#8ecae6" },
+
+    { "type": "sofa", "at": [29.45, 14], "rot": -90, "size": [2.6, 0.9], "color": "#4895ef" },
+    { "type": "coffeeTable", "at": [27.5, 14], "rot": 90 },
+    { "type": "rug", "at": [27.3, 14], "radius": 1.9, "color": "#caffbf" },
+    { "type": "tv", "at": [24.5, 14], "rot": 90 },
+    { "type": "plant", "at": [17.5, 17.5] },
+    { "type": "plant", "at": [29.5, 10.5] },
+
+    { "type": "car", "at": [33.5, 13.5], "color": "#e63946" },
+    { "type": "toyBox", "at": [36.4, 17.4], "color": "#90be6d" },
+
+    { "type": "tree", "at": [3, 27] },
+    { "type": "tree", "at": [27, 27.5] },
+    { "type": "tree", "at": [12, 28.5] },
+    { "type": "slide", "at": [18, 24] },
+    { "type": "ball", "at": [9, 23], "color": "#ff595e" },
+    { "type": "ball", "at": [23, 26], "color": "#1982c4" }
+  ]
+}

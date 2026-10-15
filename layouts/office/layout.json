@@ -1,0 +1,26 @@
+{
+  "name": "Office",
+  "units": "meters. x grows to the east, z grows to the south. rect = [x0, z0, x1, z1]",
+  "source": "source.png",
+  "notes": "From a hand sketch measured with the iOS Measure app. Inside size 9'3\" x 11'5\" (2.82 x 3.48 m); +0.075 m per wall for wall thickness gives a 2.95 x 3.65 m rect. Glass door opening on the east wall = 11'5\" - 2 x 4'4\" = 33\" (0.85 m), centred. Tables are 28\" deep and span the full inside width. Chair and whiteboard positions estimated from the sketch. The hallway outside the glass door is NOT in the sketch: assumed 1.5 m wide, same length as the office.",
+  "wallHeight": 2.6,
+  "spawn": { "at": [1.5, 1.825], "facing": "east" },
+
+  "rooms": [
+    { "name": "Office",  "rect": [0, 0, 2.95, 3.65],    "floor": "#c9d6ea", "pattern": "carpet" },
+    { "name": "Hallway", "rect": [2.95, 0, 4.45, 3.65], "floor": "#dedbd2", "pattern": "carpet" }
+  ],
+
+  "doors": [
+    { "at": [2.95, 1.825], "width": 0.85 }
+  ],
+
+  "furniture": [
+    { "type": "table", "at": [1.475, 0.44], "size": [2.78, 0.71] },
+    { "type": "table", "at": [1.475, 3.21], "size": [2.78, 0.71] },
+    { "type": "chair", "at": [1.5, 1.15], "rot": 180, "color": "#577590" },
+    { "type": "chair", "at": [1.5, 2.5], "color": "#f3722c" },
+    { "type": "whiteboard", "at": [0.11, 1.8], "rot": 90, "size": [1.2, 0.05] },
+    { "type": "plant", "at": [4.1, 0.4] }
+  ]
+}

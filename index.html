@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Home Explorer" />
+    <title>Home Explorer</title>
+    <link rel="stylesheet" href="src/style.css" />
+    <script type="importmap">
+      { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js" } }
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+
+    <div id="hud">
+      <div id="room-label"></div>
+      <canvas id="minimap"></canvas>
+      <div id="side-buttons">
+        <button id="map-btn" class="hud-btn" aria-label="Map view">🗺️</button>
+        <button id="layout-btn" class="hud-btn" aria-label="Choose layout">🏠</button>
+      </div>
+      <div id="hint">↑ ↓ walk &nbsp;·&nbsp; ← → turn &nbsp;·&nbsp; Shift run &nbsp;·&nbsp; M map</div>
+    </div>
+
+    <div id="layout-panel" hidden>
+      <div class="panel-head">
+        <span>Choose a place</span>
+        <button class="close" aria-label="Close">✕</button>
+      </div>
+      <ul></ul>
+    </div>
+
+    <div id="touch-controls">
+      <div class="pad left">
+        <button id="btn-fwd" class="tbtn" aria-label="Walk forward">▲</button>
+        <button id="btn-back" class="tbtn" aria-label="Walk backward">▼</button>
+      </div>
+      <div class="pad right">
+        <button id="btn-left" class="tbtn" aria-label="Turn left">↰</button>
+        <button id="btn-right" class="tbtn" aria-label="Turn right">↱</button>
+      </div>
+    </div>
+
+    <script type="module" src="src/main.js"></script>
+  </body>
+</html>

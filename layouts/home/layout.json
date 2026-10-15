@@ -1,0 +1,1154 @@
+{
+  "name": "Home",
+  "units": "meters. x grows to the east, z grows to the south. rect = [x0, z0, x1, z1]",
+  "source": "source.png",
+  "notes": "Draft hand sketch, measurements by the iOS Measure app (inside dimensions; +0.4 ft per wall added). Assumptions: (1) Bedroom 1 '11'30\"' read as 11'3\" for the part below Bathroom 1, which matches the drawing proportions and the overall house length. (2) Hallway beside the garage made 9'4\" instead of the labelled 7'1\", so the family-room door fits next to the front door. (3) Closet 3 depth 3'3\" (2'8\" from labels is too narrow to walk into); its sliding door is on the west side because the queen bed blocks the rest. Closet 2 size and the hallway widths taken from drawing proportions. (4) Family room labelled 15'5\" so its west wall sits 0.4 ft west of Bedroom 2's (drawing shows it slightly east). (5) Yard, front yard, driveway and sidewalk sizes come from drawing scale - no measurements given. (6) Windows are holes in the wall (sill 0.9 m, top 2.1 m; bathrooms sill 1.2 m), placed where the sketch draws them. The porch 'Window 3'2\"' is drawn next to both the family room and garage walls, so both got one. Furniture uses standard sizes (queen 60x80\", twin 39x75\") placed where the sketch shows them.",
+  "wallHeight": 2.6,
+  "spawn": {
+    "at": [
+      10.21,
+      2.74
+    ],
+    "facing": "north"
+  },
+  "rooms": [
+    {
+      "name": "Bedroom 2 (Kid's)",
+      "rect": [
+        0.0,
+        0.0,
+        3.7,
+        3.17
+      ],
+      "floor": "#ffc8dd",
+      "pattern": "carpet"
+    },
+    {
+      "name": "Closet 2",
+      "rect": [
+        3.7,
+        0.0,
+        4.69,
+        1.62
+      ],
+      "floor": "#e2cfea",
+      "pattern": "carpet"
+    },
+    {
+      "name": "Bathroom 2",
+      "rect": [
+        0.0,
+        3.17,
+        3.7,
+        5.12
+      ],
+      "floor": "#bde0fe",
+      "pattern": "tile"
+    },
+    {
+      "name": "Bedroom 3 (Women's)",
+      "rect": [
+        4.69,
+        0.0,
+        8.09,
+        3.28
+      ],
+      "floor": "#ffd6a5",
+      "pattern": "carpet"
+    },
+    {
+      "name": "Closet 3",
+      "rect": [
+        4.69,
+        3.28,
+        8.09,
+        4.27
+      ],
+      "floor": "#f8e1c4",
+      "pattern": "carpet"
+    },
+    {
+      "name": "Living Room",
+      "rect": [
+        8.09,
+        0.0,
+        12.38,
+        5.43
+      ],
+      "floor": "#e0b98a",
+      "pattern": "wood"
+    },
+    {
+      "name": "Hallway",
+      "rects": [
+        [
+          3.7,
+          1.62,
+          4.69,
+          5.12
+        ],
+        [
+          4.69,
+          4.27,
+          8.09,
+          5.43
+        ],
+        [
+          4.69,
+          5.43,
+          6.47,
+          11.34
+        ]
+      ],
+      "floor": "#e9c46a",
+      "pattern": "wood"
+    },
+    {
+      "name": "Kitchen",
+      "rect": [
+        6.47,
+        5.43,
+        12.38,
+        8.49
+      ],
+      "floor": "#fdffb6",
+      "pattern": "tile"
+    },
+    {
+      "name": "Garage",
+      "rect": [
+        6.47,
+        8.49,
+        12.38,
+        15.63
+      ],
+      "floor": "#c9ccd1",
+      "pattern": "concrete"
+    },
+    {
+      "name": "Bathroom 1",
+      "rect": [
+        1.14,
+        5.12,
+        3.7,
+        6.59
+      ],
+      "floor": "#a2d2ff",
+      "pattern": "tile"
+    },
+    {
+      "name": "Bedroom 1 (Men's)",
+      "rects": [
+        [
+          1.14,
+          6.59,
+          4.69,
+          10.14
+        ],
+        [
+          3.7,
+          5.12,
+          4.69,
+          6.59
+        ]
+      ],
+      "floor": "#cdb4db",
+      "pattern": "carpet"
+    },
+    {
+      "name": "Family Room",
+      "rect": [
+        -0.13,
+        10.14,
+        4.69,
+        15.9
+      ],
+      "floor": "#d4a373",
+      "pattern": "wood"
+    },
+    {
+      "name": "Backyard",
+      "outdoor": true,
+      "floor": "#8bd16a",
+      "pattern": "grass",
+      "rects": [
+        [
+          -2.77,
+          -10.58,
+          15.58,
+          0.0
+        ],
+        [
+          -2.77,
+          0.0,
+          0.0,
+          5.12
+        ],
+        [
+          -2.77,
+          5.12,
+          1.14,
+          10.14
+        ],
+        [
+          -2.77,
+          10.14,
+          -0.13,
+          14.57
+        ],
+        [
+          12.38,
+          0.0,
+          15.58,
+          14.57
+        ]
+      ]
+    },
+    {
+      "name": "Front Yard",
+      "outdoor": true,
+      "floor": "#8bd16a",
+      "pattern": "grass",
+      "rects": [
+        [
+          -2.77,
+          14.57,
+          -0.13,
+          15.9
+        ],
+        [
+          -2.77,
+          15.9,
+          6.47,
+          26.4
+        ],
+        [
+          4.69,
+          11.34,
+          6.47,
+          15.9
+        ],
+        [
+          12.38,
+          14.57,
+          15.58,
+          26.4
+        ]
+      ]
+    },
+    {
+      "name": "Driveway",
+      "outdoor": true,
+      "rect": [
+        6.47,
+        15.63,
+        12.38,
+        26.4
+      ],
+      "floor": "#d6d3cc",
+      "pattern": "concrete"
+    },
+    {
+      "name": "Sidewalk",
+      "outdoor": true,
+      "rect": [
+        -2.77,
+        26.4,
+        15.58,
+        28.59
+      ],
+      "floor": "#e5e5e5",
+      "pattern": "concrete"
+    }
+  ],
+  "doors": [
+    {
+      "at": [
+        3.7,
+        2.35
+      ],
+      "width": 0.91
+    },
+    {
+      "at": [
+        3.7,
+        0.81
+      ],
+      "width": 0.91
+    },
+    {
+      "at": [
+        3.7,
+        3.84
+      ],
+      "width": 0.91
+    },
+    {
+      "at": [
+        4.69,
+        2.53
+      ],
+      "width": 0.91
+    },
+    {
+      "at": [
+        5.61,
+        3.28
+      ],
+      "width": 1.52
+    },
+    {
+      "at": [
+        4.2,
+        5.12
+      ],
+      "width": 0.85
+    },
+    {
+      "at": [
+        1.65,
+        6.59
+      ],
+      "width": 0.91
+    },
+    {
+      "at": [
+        8.09,
+        4.85
+      ],
+      "width": 1.01
+    },
+    {
+      "at": [
+        6.47,
+        5.97
+      ],
+      "width": 0.91
+    },
+    {
+      "at": [
+        9.4,
+        5.43
+      ],
+      "width": 0.91
+    },
+    {
+      "at": [
+        9.6,
+        8.49
+      ],
+      "width": 0.91
+    },
+    {
+      "at": [
+        4.69,
+        10.73
+      ],
+      "width": 0.91
+    },
+    {
+      "at": [
+        5.58,
+        11.34
+      ],
+      "width": 0.91
+    },
+    {
+      "at": [
+        0.51,
+        10.14
+      ],
+      "width": 0.91
+    },
+    {
+      "at": [
+        12.38,
+        10.42
+      ],
+      "width": 0.91
+    },
+    {
+      "at": [
+        10.55,
+        0.0
+      ],
+      "width": 2.44
+    },
+    {
+      "at": [
+        9.45,
+        15.63
+      ],
+      "width": 4.88
+    },
+    {
+      "at": [
+        -1.45,
+        14.57
+      ],
+      "width": 1.83
+    },
+    {
+      "at": [
+        13.98,
+        14.57
+      ],
+      "width": 1.83
+    }
+  ],
+  "windows": [
+    {
+      "at": [
+        1.8,
+        0.0
+      ],
+      "width": 2.13
+    },
+    {
+      "at": [
+        6.13,
+        0.0
+      ],
+      "width": 2.13
+    },
+    {
+      "at": [
+        0.0,
+        4.07
+      ],
+      "width": 0.97,
+      "sill": 1.2
+    },
+    {
+      "at": [
+        1.14,
+        5.93
+      ],
+      "width": 0.97,
+      "sill": 1.2
+    },
+    {
+      "at": [
+        1.14,
+        8.23
+      ],
+      "width": 2.13
+    },
+    {
+      "at": [
+        12.38,
+        4.63
+      ],
+      "width": 0.97
+    },
+    {
+      "at": [
+        12.38,
+        6.96
+      ],
+      "width": 0.97
+    },
+    {
+      "at": [
+        2.26,
+        15.9
+      ],
+      "width": 2.44
+    },
+    {
+      "at": [
+        4.69,
+        12.95
+      ],
+      "width": 0.97
+    },
+    {
+      "at": [
+        6.47,
+        12.63
+      ],
+      "width": 0.97
+    }
+  ],
+  "fences": [
+    {
+      "from": [
+        -2.77,
+        14.57
+      ],
+      "to": [
+        -0.13,
+        14.57
+      ]
+    },
+    {
+      "from": [
+        12.38,
+        14.57
+      ],
+      "to": [
+        15.58,
+        14.57
+      ]
+    }
+  ],
+  "furniture": [
+    {
+      "type": "bed",
+      "at": [
+        1.91,
+        0.55
+      ],
+      "size": [
+        1.35,
+        0.75
+      ],
+      "color": "#ffc6ff"
+    },
+    {
+      "type": "bed",
+      "at": [
+        0.67,
+        2.04
+      ],
+      "size": [
+        0.99,
+        1.9
+      ],
+      "color": "#a0c4ff"
+    },
+    {
+      "type": "bookshelf",
+      "at": [
+        1.91,
+        2.84
+      ],
+      "rot": 180,
+      "size": [
+        1.2,
+        0.3
+      ],
+      "height": 1.0,
+      "color": "#ffd166"
+    },
+    {
+      "type": "toilet",
+      "at": [
+        0.4,
+        4.6
+      ],
+      "rot": 180
+    },
+    {
+      "type": "sink",
+      "at": [
+        1.38,
+        4.67
+      ],
+      "rot": 180,
+      "size": [
+        0.9,
+        0.55
+      ]
+    },
+    {
+      "type": "tub",
+      "at": [
+        2.78,
+        4.57
+      ],
+      "size": [
+        1.5,
+        0.75
+      ]
+    },
+    {
+      "type": "desk",
+      "at": [
+        5.17,
+        0.77
+      ],
+      "rot": 90,
+      "size": [
+        1.2,
+        0.6
+      ]
+    },
+    {
+      "type": "bed",
+      "at": [
+        6.74,
+        2.08
+      ],
+      "size": [
+        1.52,
+        2.03
+      ],
+      "color": "#ffadad"
+    },
+    {
+      "type": "bookshelf",
+      "at": [
+        8.44,
+        0.62
+      ],
+      "rot": 90,
+      "size": [
+        0.9,
+        0.35
+      ]
+    },
+    {
+      "type": "bookshelf",
+      "at": [
+        12.03,
+        0.62
+      ],
+      "rot": -90,
+      "size": [
+        0.9,
+        0.35
+      ]
+    },
+    {
+      "type": "sofa",
+      "at": [
+        8.72,
+        2.55
+      ],
+      "rot": 90,
+      "size": [
+        2.2,
+        0.9
+      ],
+      "color": "#4895ef"
+    },
+    {
+      "type": "coffeeTable",
+      "at": [
+        8.57,
+        4.12
+      ],
+      "size": [
+        0.6,
+        0.5
+      ]
+    },
+    {
+      "type": "tv",
+      "at": [
+        11.98,
+        2.38
+      ],
+      "rot": -90,
+      "size": [
+        1.4,
+        0.45
+      ]
+    },
+    {
+      "type": "bookshelf",
+      "at": [
+        12.03,
+        4.5
+      ],
+      "rot": -90,
+      "size": [
+        1.5,
+        0.35
+      ],
+      "height": 1.0,
+      "color": "#ffd166"
+    },
+    {
+      "type": "desk",
+      "at": [
+        10.22,
+        5.0
+      ],
+      "rot": 180,
+      "size": [
+        1.0,
+        0.5
+      ],
+      "color": "#caffbf"
+    },
+    {
+      "type": "box",
+      "at": [
+        10.22,
+        4.41
+      ],
+      "size": [
+        0.45,
+        0.3
+      ],
+      "height": 0.3,
+      "color": "#ffadad"
+    },
+    {
+      "type": "fridge",
+      "at": [
+        11.84,
+        5.98
+      ],
+      "size": [
+        0.74,
+        0.75
+      ]
+    },
+    {
+      "type": "counter",
+      "at": [
+        11.17,
+        5.93
+      ],
+      "size": [
+        0.6,
+        0.65
+      ]
+    },
+    {
+      "type": "box",
+      "at": [
+        10.49,
+        5.93
+      ],
+      "size": [
+        0.76,
+        0.65
+      ],
+      "height": 0.92,
+      "color": "#495057"
+    },
+    {
+      "type": "counter",
+      "at": [
+        9.81,
+        5.93
+      ],
+      "size": [
+        0.6,
+        0.65
+      ]
+    },
+    {
+      "type": "bookshelf",
+      "at": [
+        8.12,
+        5.8
+      ],
+      "size": [
+        1.2,
+        0.4
+      ],
+      "height": 1.6,
+      "color": "#ffffff"
+    },
+    {
+      "type": "counter",
+      "at": [
+        11.11,
+        7.99
+      ],
+      "rot": 180,
+      "size": [
+        2.2,
+        0.65
+      ]
+    },
+    {
+      "type": "table",
+      "at": [
+        6.89,
+        7.42
+      ],
+      "rot": 90,
+      "size": [
+        1.8,
+        0.5
+      ]
+    },
+    {
+      "type": "table",
+      "at": [
+        8.47,
+        7.57
+      ],
+      "rot": 90,
+      "size": [
+        1.5,
+        0.9
+      ]
+    },
+    {
+      "type": "chair",
+      "at": [
+        7.72,
+        7.22
+      ],
+      "rot": 90
+    },
+    {
+      "type": "chair",
+      "at": [
+        7.72,
+        7.92
+      ],
+      "rot": 90
+    },
+    {
+      "type": "chair",
+      "at": [
+        9.22,
+        7.57
+      ],
+      "rot": -90,
+      "color": "#f3722c"
+    },
+    {
+      "type": "box",
+      "at": [
+        10.8,
+        9.02
+      ],
+      "size": [
+        0.7,
+        0.7
+      ],
+      "height": 0.95,
+      "color": "#f8f9fa"
+    },
+    {
+      "type": "box",
+      "at": [
+        11.52,
+        9.02
+      ],
+      "size": [
+        0.7,
+        0.7
+      ],
+      "height": 0.95,
+      "color": "#e9ecef"
+    },
+    {
+      "type": "desk",
+      "at": [
+        1.62,
+        9.27
+      ],
+      "rot": 90,
+      "size": [
+        1.4,
+        0.6
+      ]
+    },
+    {
+      "type": "bed",
+      "at": [
+        3.5,
+        9.21
+      ],
+      "rot": -90,
+      "size": [
+        1.52,
+        2.03
+      ],
+      "color": "#90dbf4"
+    },
+    {
+      "type": "mat",
+      "at": [
+        1.69,
+        10.9
+      ],
+      "size": [
+        2.4,
+        1.0
+      ],
+      "color": "#9b5de5"
+    },
+    {
+      "type": "sofa",
+      "at": [
+        0.5,
+        12.45
+      ],
+      "rot": 90,
+      "size": [
+        2.2,
+        0.9
+      ],
+      "color": "#ef476f"
+    },
+    {
+      "type": "bookshelf",
+      "at": [
+        4.34,
+        12.95
+      ],
+      "rot": -90,
+      "size": [
+        0.9,
+        0.35
+      ]
+    },
+    {
+      "type": "piano",
+      "at": [
+        0.35,
+        14.72
+      ],
+      "rot": 90,
+      "size": [
+        1.5,
+        0.6
+      ]
+    },
+    {
+      "type": "box",
+      "at": [
+        0.89,
+        14.82
+      ],
+      "rot": 90,
+      "size": [
+        0.8,
+        0.35
+      ],
+      "height": 0.5,
+      "color": "#8d5a3b"
+    },
+    {
+      "type": "desk",
+      "at": [
+        4.14,
+        14.39
+      ],
+      "rot": -90,
+      "size": [
+        1.5,
+        0.75
+      ]
+    },
+    {
+      "type": "chair",
+      "at": [
+        3.43,
+        14.44
+      ],
+      "rot": 90
+    },
+    {
+      "type": "desk",
+      "at": [
+        2.11,
+        15.45
+      ],
+      "rot": 180,
+      "size": [
+        1.4,
+        0.55
+      ],
+      "color": "#caffbf"
+    },
+    {
+      "type": "desk",
+      "at": [
+        3.82,
+        15.45
+      ],
+      "rot": 180,
+      "size": [
+        1.4,
+        0.55
+      ]
+    },
+    {
+      "type": "chair",
+      "at": [
+        2.44,
+        14.83
+      ],
+      "color": "#f3722c"
+    },
+    {
+      "type": "mat",
+      "at": [
+        -1.47,
+        -5.37
+      ],
+      "size": [
+        2.26,
+        9.59
+      ],
+      "color": "#c9bfa8"
+    },
+    {
+      "type": "mat",
+      "at": [
+        2.29,
+        -5.33
+      ],
+      "size": [
+        4.8,
+        9.52
+      ],
+      "color": "#6fbf4a"
+    },
+    {
+      "type": "mat",
+      "at": [
+        8.75,
+        -4.53
+      ],
+      "size": [
+        7.85,
+        7.91
+      ],
+      "color": "#d6d3cc"
+    },
+    {
+      "type": "trampoline",
+      "at": [
+        2.31,
+        -3.53
+      ],
+      "size": [
+        3.4,
+        3.4
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        5.97,
+        -9.42
+      ],
+      "size": [
+        0.5,
+        0.5
+      ],
+      "kind": "pine"
+    },
+    {
+      "type": "tree",
+      "at": [
+        7.88,
+        -9.42
+      ],
+      "size": [
+        0.5,
+        0.5
+      ],
+      "kind": "pine"
+    },
+    {
+      "type": "tree",
+      "at": [
+        9.79,
+        -9.42
+      ],
+      "size": [
+        0.5,
+        0.5
+      ],
+      "kind": "pine"
+    },
+    {
+      "type": "tree",
+      "at": [
+        11.7,
+        -9.42
+      ],
+      "size": [
+        0.5,
+        0.5
+      ],
+      "kind": "pine"
+    },
+    {
+      "type": "flowers",
+      "at": [
+        14.09,
+        -6.35
+      ],
+      "size": [
+        2.54,
+        7.89
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        14.62,
+        -0.17
+      ],
+      "size": [
+        0.5,
+        0.5
+      ],
+      "fruit": "#fff275"
+    },
+    {
+      "type": "tree",
+      "at": [
+        14.62,
+        3.81
+      ],
+      "size": [
+        0.5,
+        0.5
+      ],
+      "fruit": "#ff9f1c"
+    },
+    {
+      "type": "tree",
+      "at": [
+        14.62,
+        7.78
+      ],
+      "size": [
+        0.5,
+        0.5
+      ],
+      "fruit": "#f9c74f"
+    },
+    {
+      "type": "tree",
+      "at": [
+        -1.75,
+        2.4
+      ],
+      "size": [
+        0.5,
+        0.5
+      ],
+      "fruit": "#f9c74f"
+    },
+    {
+      "type": "tree",
+      "at": [
+        -1.75,
+        7.19
+      ],
+      "size": [
+        0.5,
+        0.5
+      ],
+      "fruit": "#ffadad"
+    },
+    {
+      "type": "flowers",
+      "at": [
+        13.98,
+        21.49
+      ],
+      "size": [
+        2.84,
+        9.47
+      ]
+    }
+  ]
+}
