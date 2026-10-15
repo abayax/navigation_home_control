@@ -35,6 +35,8 @@ Options: `--layout office` opens straight into a layout, `--no-browser` just ser
 | Climb a tree / climb down (stand next to it) | Space | ⤒ button |
 | Run (2.6× faster) | double-tap ↑ and hold (or hold Shift) | double-tap ▲ and hold, or tap the view then drag |
 | Map view (top-down overview) | M | 🗺️ button or tap the minimap |
+| …in the map view: move up / down / left / right on the map | arrow keys (she turns that way, then walks; two keys = diagonal) | hold ▲ ▼ ↰ ↱, or drag in any direction |
+| Day / night | N | 🌙 / ☀️ button |
 | Switch layout | 🏠 button | 🏠 button |
 
 Jumping: the kid jumps about 1 m and can land on beds, couches, chairs, tables, desks, counters and benches. Walk off the edge to get down. Taller things (fridge, bookshelves, TV, cars, trees) are out of reach, and walls and fences always block. The trampoline keeps bouncing; jump while bouncing to go much higher.
@@ -65,6 +67,7 @@ When the kid gets close (about 2 m, not through a wall), a speech bubble pops up
 | `src/collision.js` | Solid walls and furniture, keeps the camera inside rooms |
 | `src/physics.js` | Jumping, gravity, landing on furniture, trampoline bounces |
 | `src/person.js` | The kid and the adults (shared cartoon person model, walking/sitting/jumping poses) |
+| `src/sky.js` | Day / night: sky colours, lights, sun and clouds, moon and stars |
 | `src/npc.js` | Mom and Dad: choosing what to do, walking, sitting, the car, speech bubbles |
 | `src/nav.js` | Walkable grid + A* path finding used by the NPCs |
 | `npcs/npcs.json` | Who the NPCs are and what they look like |

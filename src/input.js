@@ -5,7 +5,8 @@
 //   → / D        turn 90° right (each tap)
 //   Space        jump
 //   Shift        run (also: double-tap forward)
-//   M            toggle map view
+//   M            toggle map view (in the map view the arrows move up/down/left/right on the map)
+//   N            toggle day / night
 // Touch: on-screen buttons for the same actions (double-tap ▲ to run), or drag
 // on the 3D view like a joystick (up/down walk, left/right steer); tap then
 // touch-and-drag again to run. Mouse dragging works the same on a computer.
@@ -16,18 +17,22 @@ const JUMP_BUFFER_MS = 150; // a jump pressed just before landing still counts
 const DOUBLE_TAP_MS = 300; // two forward presses this close together = run
 
 export class Input {
-  constructor({ onToggleMap }) {
+  constructor({ onToggleMap, onToggleNight }) {
     this.keys = new Set();
     this.touchFwd = false;
     this.touchBack = false;
+    this.touchLeft = false; // turn buttons held (used as left/right in map view)
+    this.touchRight = false;
     this.pendingTurns = 0; // +1 per left turn, -1 per right turn
     this.jumpAt = -Infinity; // time of the last jump press
-    this.lastForwardAt = -Infinity; // time of the last forward press
-    this.dash = false; // running because forward was double-tapped
+    this.lastPress = { dir: null, at: -Infinity }; // last direction key/button press
+    this.dash = null; // direction that was double-tapped (run while it's held)
     this.dragMove = 0; // from dragging the 3D view: +1 forward, -1 back
     this.steer = 0; // from dragging: -1..1, positive = turn left
+    this.dragVec = { x: 0, z: 0 }; // from dragging, in screen terms (x right, z down), -1..1
     this.dragRun = false; // this drag started with a double tap
     this.onToggleMap = onToggleMap;
+    this.onToggleNight = onToggleNight;
 
     this.#bindKeyboard();
     this.#bindTouchButtons();
@@ -41,15 +46,33 @@ export class Input {
     return Math.sign((fwd ? 1 : 0) - (back ? 1 : 0) + this.dragMove);
   }
 
-  get run() {
-    return this.keys.has('ShiftLeft') || this.keys.has('ShiftRight') || ((this.dash || this.dragRun) && this.move > 0);
+  /** Is a direction ('up' | 'down' | 'left' | 'right') held on keys or buttons? */
+  held(dir) {
+    const k = this.keys;
+    if (dir === 'up') return k.has('ArrowUp') || k.has('KeyW') || this.touchFwd;
+    if (dir === 'down') return k.has('ArrowDown') || k.has('KeyS') || this.touchBack;
+    if (dir === 'left') return k.has('ArrowLeft') || k.has('KeyA') || this.touchLeft;
+    return k.has('ArrowRight') || k.has('KeyD') || this.touchRight;
   }
 
-  /** Forward was pressed: a second press soon after the first starts running. */
-  #forwardPressed() {
+  /** Screen-relative direction for the map view: x = right, z = down (not normalised). */
+  get mapDir() {
+    const x = (this.held('right') ? 1 : 0) - (this.held('left') ? 1 : 0) + this.dragVec.x;
+    const z = (this.held('down') ? 1 : 0) - (this.held('up') ? 1 : 0) + this.dragVec.z;
+    return { x, z };
+  }
+
+  get run() {
+    const dragging = this.dragVec.x !== 0 || this.dragVec.z !== 0;
+    return this.keys.has('ShiftLeft') || this.keys.has('ShiftRight') ||
+      (this.dragRun && dragging) || (this.dash !== null && this.held(this.dash));
+  }
+
+  /** A direction was pressed: pressing the same one twice quickly starts running. */
+  #dirPressed(dir) {
     const now = performance.now();
-    this.dash = now - this.lastForwardAt < DOUBLE_TAP_MS;
-    this.lastForwardAt = now;
+    this.dash = this.lastPress.dir === dir && now - this.lastPress.at < DOUBLE_TAP_MS ? dir : null;
+    this.lastPress = { dir, at: now };
   }
 
   /** Returns and clears the queued turns since the last call. */
@@ -84,8 +107,10 @@ export class Input {
       if (e.code === 'ArrowLeft' || e.code === 'KeyA') this.pendingTurns += 1;
       if (e.code === 'ArrowRight' || e.code === 'KeyD') this.pendingTurns -= 1;
       if (e.code === 'KeyM') this.onToggleMap();
+      if (e.code === 'KeyN') this.onToggleNight?.();
       if (e.code === 'Space') this.jump();
-      if (e.code === 'ArrowUp' || e.code === 'KeyW') this.#forwardPressed();
+      const dir = { ArrowUp: 'up', KeyW: 'up', ArrowDown: 'down', KeyS: 'down', ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right' }[e.code];
+      if (dir) this.#dirPressed(dir);
     });
     addEventListener('keyup', (e) => this.keys.delete(e.code));
     addEventListener('blur', () => this.keys.clear());
@@ -111,21 +136,21 @@ export class Input {
     };
     hold('btn-fwd', (v) => {
       this.touchFwd = v;
-      if (v) this.#forwardPressed();
+      if (v) this.#dirPressed('up');
     });
-    hold('btn-back', (v) => (this.touchBack = v));
-
-    const tap = (id, turns) => {
-      const el = document.getElementById(id);
-      el.addEventListener('pointerdown', (e) => {
-        e.preventDefault();
-        this.pendingTurns += turns;
-        el.classList.add('pressed');
-        setTimeout(() => el.classList.remove('pressed'), 120);
-      });
-    };
-    tap('btn-left', 1);
-    tap('btn-right', -1);
+    hold('btn-back', (v) => {
+      this.touchBack = v;
+      if (v) this.#dirPressed('down');
+    });
+    // Turn buttons: each press = one 90° turn; held = left/right in the map view
+    hold('btn-left', (v) => {
+      this.touchLeft = v;
+      if (v) { this.pendingTurns += 1; this.#dirPressed('left'); }
+    });
+    hold('btn-right', (v) => {
+      this.touchRight = v;
+      if (v) { this.pendingTurns -= 1; this.#dirPressed('right'); }
+    });
     const jumpBtn = document.getElementById('btn-jump');
     jumpBtn.addEventListener('pointerdown', (e) => {
       e.preventDefault();
@@ -176,6 +201,7 @@ export class Input {
       if (len > DRAG_MAX_PX) { dx *= DRAG_MAX_PX / len; dy *= DRAG_MAX_PX / len; }
       knob.style.transform = `translate(${dx}px, ${dy}px)`;
       this.dragMove = dy < -DRAG_DEAD_PX ? 1 : dy > DRAG_DEAD_PX ? -1 : 0;
+      this.dragVec = len > DRAG_DEAD_PX ? { x: dx / DRAG_MAX_PX, z: dy / DRAG_MAX_PX } : { x: 0, z: 0 };
       const side = Math.abs(dx) > DRAG_DEAD_PX ? (dx - Math.sign(dx) * DRAG_DEAD_PX) / (DRAG_MAX_PX - DRAG_DEAD_PX) : 0;
       this.steer = -side; // drag right = turn right (negative yaw)
     });
@@ -186,6 +212,7 @@ export class Input {
       active = null;
       this.dragMove = 0;
       this.steer = 0;
+      this.dragVec = { x: 0, z: 0 };
       this.dragRun = false;
       ring.classList.remove('show');
     };

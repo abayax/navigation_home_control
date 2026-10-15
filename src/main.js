@@ -8,6 +8,7 @@ import { stepVertical } from './physics.js';
 import { Hud } from './hud.js';
 import { loadLayout, setupLayoutPicker } from './layouts.js';
 import { NavGrid } from './nav.js';
+import { Environment } from './sky.js';
 import { Npc, findSpots, loadNpcDefs } from './npc.js';
 
 const WALK_SPEED = 2.4; // m/s
@@ -43,7 +44,8 @@ scene.fog = new THREE.Fog('#bfe6ff', 60, 160);
 
 const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.05, 300);
 
-scene.add(new THREE.HemisphereLight('#ffffff', '#b8d8a0', 2.2));
+const hemi = new THREE.HemisphereLight('#ffffff', '#b8d8a0', 2.2);
+scene.add(hemi);
 const sun = new THREE.DirectionalLight('#fff4e0', 1.6);
 sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048);
@@ -210,7 +212,8 @@ let mapMode = false;
 let mapT = 0; // 0 = follow camera, 1 = map camera (animated)
 const toggleMap = () => (mapMode = !mapMode);
 
-const input = new Input({ onToggleMap: toggleMap });
+const env = new Environment(scene, { hemi, sun });
+const input = new Input({ onToggleMap: toggleMap, onToggleNight: () => env.toggle() });
 const hud = new Hud(data, house, { onToggleMap: toggleMap });
 
 // ---------- camera ----------
@@ -261,13 +264,25 @@ function updateCamera(dt) {
 }
 
 // ---------- game loop ----------
+const angleDiff = (a, b) => Math.atan2(Math.sin(b - a), Math.cos(b - a));
+
 function update(dt) {
-  // Smooth steering from dragging the screen
-  if (input.steer) {
-    player.yaw += input.steer * STEER_RATE * dt;
-    player.targetYaw += input.steer * STEER_RATE * dt;
+  // In the map view the controls follow the screen: up = up the map, left = left, ...
+  // The kid turns to face that way, then walks. Otherwise: tank-style turning.
+  const mapControls = mapMode;
+  const mapDir = input.mapDir;
+  const mapLen = Math.min(1, Math.hypot(mapDir.x, mapDir.z));
+  if (mapControls) {
+    input.consumeTurns(); // no 90° turns in the map view
+    if (mapLen > 0.05) player.targetYaw = player.yaw + angleDiff(player.yaw, Math.atan2(mapDir.x, mapDir.z));
+  } else {
+    // Smooth steering from dragging the screen
+    if (input.steer) {
+      player.yaw += input.steer * STEER_RATE * dt;
+      player.targetYaw += input.steer * STEER_RATE * dt;
+    }
+    player.targetYaw += input.consumeTurns() * (Math.PI / 2);
   }
-  player.targetYaw += input.consumeTurns() * (Math.PI / 2);
   const diff = player.targetYaw - player.yaw;
   const step = TURN_SPEED * dt;
   player.yaw += Math.abs(diff) <= step ? diff : Math.sign(diff) * step;
@@ -301,11 +316,19 @@ function update(dt) {
     return;
   }
 
-  const move = input.move;
-  let speed = riding
-    ? move > 0 ? BIKE_SPEED : move < 0 ? -BIKE_BACK_SPEED : 0
-    : move > 0 ? WALK_SPEED : move < 0 ? -BACK_SPEED : 0;
-  if (input.run) speed *= riding ? 1.4 : RUN_FACTOR;
+  let move, speed;
+  if (mapControls) {
+    // walk once she is (nearly) facing the chosen direction
+    const facing = Math.abs(angleDiff(player.yaw, player.targetYaw)) < 0.6;
+    move = mapLen > 0.05 && facing ? 1 : 0;
+    speed = move * (riding ? BIKE_SPEED : WALK_SPEED) * mapLen;
+  } else {
+    move = input.move;
+    speed = riding
+      ? move > 0 ? BIKE_SPEED : move < 0 ? -BIKE_BACK_SPEED : 0
+      : move > 0 ? WALK_SPEED : move < 0 ? -BACK_SPEED : 0;
+  }
+  if (input.run && move > 0) speed *= riding ? 1.4 : RUN_FACTOR;
   const prevX = player.x, prevZ = player.z;
   player.x += Math.sin(player.yaw) * speed * dt;
   player.z += Math.cos(player.yaw) * speed * dt;
@@ -324,7 +347,7 @@ function update(dt) {
 
   // Walking backwards turns the kid to face the camera (so you can see her face);
   // walking forwards turns her back around
-  if (riding) faceBack = false;
+  if (riding || mapControls) faceBack = false;
   else if (move < 0) faceBack = true;
   else if (move > 0) faceBack = false;
   const targetBody = player.yaw + (faceBack ? Math.PI : 0);
@@ -356,6 +379,7 @@ const clock = new THREE.Clock();
 renderer.setAnimationLoop(() => {
   const dt = Math.min(clock.getDelta(), 0.05);
   update(dt);
+  env.update(dt, camera, player, mapT);
   renderer.render(scene, camera);
   for (const npc of npcs) npc.placeBubble(camera, innerWidth, innerHeight);
 });
