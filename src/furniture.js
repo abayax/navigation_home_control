@@ -188,6 +188,46 @@ const builders = {
     return [1.92, 4.75];
   },
 
+  // Kid's bike, ~1.15 m long (no training wheels - it just balances). Faces +z. Wheels spin via userData.wheels.
+  bike({ color = '#2dc653' }, g) {
+    const rod = (a, b, r, c) => {
+      // cylinder from a = [y, z] to b = [y, z] in the bike's centre plane
+      const dy = b[0] - a[0], dz = b[1] - a[1];
+      const m = cyl(g, r, r, Math.hypot(dy, dz), c, 0, (a[0] + b[0]) / 2, (a[1] + b[1]) / 2, 8);
+      m.rotation.x = Math.atan2(dz, dy);
+      return m;
+    };
+    const wheels = [];
+    for (const z of [0.4, -0.4]) {
+      const tire = part(g, new THREE.TorusGeometry(0.24, 0.035, 8, 24), '#222222', 0, 0.27, z);
+      tire.rotation.y = Math.PI / 2;
+      for (let k = 0; k < 3; k++) {
+        const spoke = part(g, new THREE.BoxGeometry(0.01, 0.46, 0.012), '#dddddd', 0, 0, 0, false);
+        spoke.rotation.z = (k * Math.PI) / 3;
+        tire.add(spoke);
+        spoke.position.set(0, 0, 0);
+      }
+      wheels.push(tire);
+    }
+    rod([0.25, 0], [0.55, 0.3], 0.025, color); // down tube
+    rod([0.52, -0.1], [0.55, 0.3], 0.025, color); // top tube
+    rod([0.25, 0], [0.27, -0.4], 0.02, color); // chain stay
+    rod([0.25, -0.1], [0.55, -0.1], 0.025, color); // seat post
+    rod([0.52, -0.1], [0.27, -0.4], 0.018, color); // seat stay
+    rod([0.55, 0.3], [0.27, 0.4], 0.022, color); // fork
+    rod([0.55, 0.3], [0.72, 0.28], 0.02, '#888888'); // stem
+    const bar = cyl(g, 0.018, 0.018, 0.46, '#888888', 0, 0.72, 0.28, 8);
+    bar.rotation.z = Math.PI / 2;
+    for (const sx of [-1, 1]) {
+      const grip = cyl(g, 0.026, 0.026, 0.09, '#ff4d94', sx * 0.2, 0.72, 0.28, 8);
+      grip.rotation.z = Math.PI / 2;
+    }
+    box(g, 0.13, 0.05, 0.22, '#ff4d94', 0, 0.58, -0.1); // seat
+    box(g, 0.24, 0.14, 0.18, '#ffffff', 0, 0.62, 0.42); // front basket
+    g.userData.wheels = wheels;
+    return [0.5, 1.15];
+  },
+
   tree({ kind = 'round', fruit }, g) {
     cyl(g, 0.15, 0.2, 1.6, '#8d5a3b', 0, 0.8, 0);
     if (kind === 'pine') {
@@ -320,13 +360,15 @@ const TOPS = {
   bed: 0.57, sofa: 0.47, coffeeTable: 0.43, toyBox: 0.51, plant: 1.0, desk: 0.745,
   counter: 0.92, fridge: 1.8, tub: 0.55, toilet: 0.445, sink: 0.855, tv: 1.25,
   car: 1.42, suv: 1.62, tree: 4, slide: 1.6, table: 0.765, chair: 0.5, piano: 1.25,
-  trampoline: 0.92,
+  trampoline: 0.92, bike: 1.2,
   box: (item) => item.height ?? 1,
   bookshelf: (item) => item.height ?? 1.8,
 };
 const BOUNCY = new Set(['trampoline']);
 
 // Where people sit inside an SUV, in the car's local frame (driver on the +x side)
+export const BIKE_SEAT = { y: 0.6, z: -0.1 }; // rider's hips, in the bike's local frame
+
 export const SUV_SEATS = [
   { x: 0.4, z: 0.12, door: { x: 1.45, z: 0.12 } },
   { x: -0.4, z: 0.12, door: { x: -1.45, z: 0.12 } },

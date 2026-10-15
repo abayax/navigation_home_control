@@ -26,6 +26,7 @@ Turn a floor plan image or PDF into `layouts/<id>/layout.json`, register it, and
 - **Rooms tile the floor plan.** Neighbouring rooms must share the exact same coordinate on their common wall. Walls are generated on room edges (0.15 m thick, centred on the edge), so measurements go wall-centre to wall-centre. Add roughly 0.1 m per wall to inside measurements from the Measure app.
 - Hallways, corridors and entry areas are rooms too. Give them names ("Hallway", "Entry"), otherwise there are gaps.
 - Work out the overall outer size first, then place rooms row by row. Check that the sums of room widths match the outer dimensions.
+- A garage (or any indoor room where riding a bike is OK) gets `"allowBike": true`; bikes can always go outdoors.
 - Outdoor areas (yard, patio, balcony, driveway, sidewalk) get `"outdoor": true`. Their edges become a fence, except where they touch a house wall or **another outdoor area** (a lawn next to a driveway stays open).
 - A fence that isn't on an outdoor area's outer edge (e.g. a backyard fence between the house and the side fence) goes in `"fences": [{ "from": [x, z], "to": [x, z] }]`. Gates in it are ordinary doors placed on that line.
 - If the drawing includes the surrounding lot (yards, driveway, sidewalk), model it. Tile the whole lot with outdoor rectangles so there are no gaps, and close it with the outer fence.
@@ -66,7 +67,8 @@ Turn a floor plan image or PDF into `layouts/<id>/layout.json`, register it, and
 | whiteboard | [1.8, 0.05] | wall-mounted, no collision |
 | plant / toyBox | [0.5, 0.5] / [0.8, 0.5] | |
 | car / tree / slide | [1.9, 4.4] / [0.5, 0.5] / [0.8, 3.0] | |
-| suv | [1.92, 4.75] | white Tesla Model Y style, nose faces +z |
+| suv | [1.92, 4.75] | white Tesla Model Y style, nose faces +z; NPCs can sit inside |
+| bike | [0.5, 1.15] | rideable kid's bike; put it in a garage or outdoors |
 | piano | [1.5, 0.6] | upright, keys face +z |
 | trampoline | [3.4, 3.4] | round, solid |
 | tree | [0.5, 0.5] | `kind: "pine"` for evergreens, `fruit: "#hex"` for fruit trees |

@@ -123,7 +123,8 @@
         15.63
       ],
       "floor": "#c9ccd1",
-      "pattern": "concrete"
+      "pattern": "concrete",
+      "allowBike": true
     },
     {
       "name": "Bathroom 1",
@@ -831,6 +832,14 @@
       ],
       "height": 0.95,
       "color": "#e9ecef"
+    },
+    {
+      "type": "bike",
+      "at": [
+        6.89,
+        11.5
+      ],
+      "color": "#2dc653"
     },
     {
       "type": "desk",

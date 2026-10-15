@@ -100,6 +100,31 @@ body {
   opacity: 0;
 }
 
+#prompt {
+  position: absolute;
+  bottom: calc(70px + env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ffd84d;
+  color: #4a3b8f;
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-size: 18px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+#prompt.show {
+  opacity: 1;
+}
+
+body.touch #prompt {
+  bottom: calc(130px + env(safe-area-inset-bottom));
+}
+
 /* ---- NPC speech bubbles ---- */
 
 .bubble {

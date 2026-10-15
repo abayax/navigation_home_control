@@ -1,8 +1,9 @@
 import * as THREE from 'three';
-import { buildHouse } from './house.js';
-import { createKid } from './person.js';
+import { buildHouse, roomAt } from './house.js';
+import { createKid, HIP_HEIGHT } from './person.js';
+import { BIKE_SEAT } from './furniture.js';
 import { Input } from './input.js';
-import { resolveCollisions, cameraDistance } from './collision.js';
+import { resolveCollisions, cameraDistance, lineBlocked } from './collision.js';
 import { stepVertical } from './physics.js';
 import { Hud } from './hud.js';
 import { loadLayout, setupLayoutPicker } from './layouts.js';
@@ -15,6 +16,10 @@ const RUN_FACTOR = 1.8;
 const TURN_SPEED = Math.PI * 2.4; // rad/s -> a 90° turn takes ~0.2 s
 const CAM_DIST = 3.4;
 const CAM_HEIGHT = 1.9; // stays below door lintels (2.1 m)
+const BIKE_SPEED = 3.6;
+const BIKE_BACK_SPEED = 1.2;
+const BIKE_RADIUS = 0.3;
+const MOUNT_DISTANCE = 1.1; // how close to a bike you must be to hop on
 const FACING = { north: Math.PI, south: 0, east: Math.PI / 2, west: -Math.PI / 2 };
 
 const { layouts, current, data } = await loadLayout();
@@ -76,6 +81,76 @@ const player = {
   boost: false, // jump pressed while bouncing on a trampoline
 };
 
+let bodyYaw = player.yaw; // which way the kid's body faces (turns toward the camera when walking back)
+let faceBack = false;
+
+// ---------- bikes ----------
+// Bikes may only go in outdoor areas and rooms marked "allowBike" (the garage).
+let riding = null; // the bike being ridden
+let promptUntil = 0;
+const boxes = house.colliders.boxes;
+const promptEl = document.getElementById('prompt');
+const bikeAllowed = (x, z) => {
+  const room = roomAt(data.rooms, x, z);
+  return !!room && (room.outdoor || room.allowBike === true);
+};
+
+function nearestBike() {
+  let best = null, bestD = MOUNT_DISTANCE;
+  for (const b of house.bikes) {
+    const d = Math.hypot(b.x - player.x, b.z - player.z);
+    if (d < bestD && !lineBlocked(player.x, player.z, b.x, b.z, house.colliders.segments)) { best = b; bestD = d; }
+  }
+  return best;
+}
+
+function mount(bike) {
+  riding = bike;
+  boxes.splice(boxes.indexOf(bike.box), 1); // the bike moves with us now
+  player.x = bike.x;
+  player.z = bike.z;
+  player.yaw = player.targetYaw = bike.yaw;
+  player.radius = BIKE_RADIUS;
+  player.y = player.vy = 0;
+  player.grounded = true;
+  player.support = null;
+  faceBack = false;
+}
+
+function dismount() {
+  const bike = riding;
+  riding = null;
+  bike.x = player.x;
+  bike.z = player.z;
+  bike.yaw = player.targetYaw;
+  bike.object.rotation.y = bike.yaw;
+  const swap = Math.abs(Math.sin(bike.yaw)) > 0.5;
+  const [w, d] = swap ? [bike.box.size[1], bike.box.size[0]] : bike.box.size;
+  Object.assign(bike.box, { minX: bike.x - w / 2, maxX: bike.x + w / 2, minZ: bike.z - d / 2, maxZ: bike.z + d / 2, rot: bike.yaw });
+  boxes.push(bike.box);
+  // Step off to the side (or behind / in front) wherever there's room
+  player.radius = 0.25;
+  const c = Math.cos(bike.yaw), sn = Math.sin(bike.yaw);
+  for (const [lx, lz] of [[0.65, 0], [-0.65, 0], [0, -1.0], [0, 1.0]]) {
+    const test = { x: bike.x + lx * c + lz * sn, z: bike.z - lx * sn + lz * c, y: 0, radius: player.radius };
+    const { x, z } = test;
+    resolveCollisions(test, house.colliders);
+    const clear = Math.hypot(test.x - x, test.z - z) < 1e-3 && !lineBlocked(bike.x, bike.z, x, z, house.colliders.segments);
+    if (clear && roomAt(data.rooms, x, z)) {
+      player.x = x;
+      player.z = z;
+      break;
+    }
+  }
+}
+
+function showPrompt(text, seconds = 0) {
+  if (seconds) promptUntil = performance.now() + seconds * 1000;
+  else if (performance.now() < promptUntil) return; // a timed message is showing
+  promptEl.textContent = text;
+  promptEl.classList.toggle('show', !!text);
+}
+
 let mapMode = false;
 let mapT = 0; // 0 = follow camera, 1 = map camera (animated)
 const toggleMap = () => (mapMode = !mapMode);
@@ -135,17 +210,59 @@ function update(dt) {
   const step = TURN_SPEED * dt;
   player.yaw += Math.abs(diff) <= step ? diff : Math.sign(diff) * step;
 
+  // Hop on / off a bike with jump
+  const touch = document.body.classList.contains('touch');
+  if (riding) {
+    if (input.consumeJump()) dismount();
+  } else if (player.grounded && player.y < 0.05 && input.jumpQueued && nearestBike()) {
+    input.consumeJump();
+    mount(nearestBike());
+  }
+
   const move = input.move;
-  let speed = move > 0 ? WALK_SPEED : move < 0 ? -BACK_SPEED : 0;
-  if (input.run) speed *= RUN_FACTOR;
+  let speed = riding
+    ? move > 0 ? BIKE_SPEED : move < 0 ? -BIKE_BACK_SPEED : 0
+    : move > 0 ? WALK_SPEED : move < 0 ? -BACK_SPEED : 0;
+  if (input.run) speed *= riding ? 1.4 : RUN_FACTOR;
+  const prevX = player.x, prevZ = player.z;
   player.x += Math.sin(player.yaw) * speed * dt;
   player.z += Math.cos(player.yaw) * speed * dt;
   for (const npc of npcs) npc.pushAway(player);
   resolveCollisions(player, house.colliders);
+  if (riding) {
+    // Keep the bike out of the house: check where we are and just ahead of the front wheel
+    const dir = speed < 0 ? -1 : 1;
+    const aheadX = player.x + Math.sin(player.yaw) * 0.55 * dir, aheadZ = player.z + Math.cos(player.yaw) * 0.55 * dir;
+    if (!bikeAllowed(player.x, player.z) || !bikeAllowed(aheadX, aheadZ)) {
+      if (speed !== 0) showPrompt('🚲 No bikes in the house!', 2);
+      player.x = prevX;
+      player.z = prevZ;
+    }
+  }
 
-  const groundY = stepVertical(player, house.colliders.boxes, dt, () => input.consumeJump());
+  // Walking backwards turns the kid to face the camera (so you can see her face);
+  // walking forwards turns her back around
+  if (riding) faceBack = false;
+  else if (move < 0) faceBack = true;
+  else if (move > 0) faceBack = false;
+  const targetBody = player.yaw + (faceBack ? Math.PI : 0);
+  bodyYaw += Math.atan2(Math.sin(targetBody - bodyYaw), Math.cos(targetBody - bodyYaw)) * Math.min(1, dt * 10);
 
-  kid.update(dt, player.grounded ? speed : 0, player.x, player.z, player.yaw, player.y, groundY);
+  if (riding) {
+    const fx = Math.sin(player.yaw), fz = Math.cos(player.yaw);
+    riding.object.position.set(player.x, 0, player.z);
+    riding.object.rotation.y = player.yaw;
+    for (const wheel of riding.object.userData.wheels ?? []) wheel.rotation.z -= (speed * dt) / 0.24;
+    const seatX = player.x + fx * BIKE_SEAT.z, seatZ = player.z + fz * BIKE_SEAT.z;
+    kid.update(dt, Math.abs(speed), seatX, seatZ, player.yaw, BIKE_SEAT.y - HIP_HEIGHT, 0, 0, 1);
+    showPrompt(touch ? 'Tap ⤒ to get off' : 'Press Space to get off');
+  } else {
+    const groundY = stepVertical(player, boxes, dt, () => input.consumeJump());
+    const animSpeed = player.grounded ? (faceBack ? Math.abs(speed) : speed) : 0;
+    kid.update(dt, animSpeed, player.x, player.z, bodyYaw, player.y, groundY);
+    showPrompt(player.grounded && player.y < 0.05 && nearestBike() ? (touch ? '🚲 Tap ⤒ to ride' : '🚲 Press Space to ride') : '');
+  }
+
   for (const npc of npcs) npc.update(dt, player, npcs.filter((o) => o !== npc));
   updateCamera(dt);
   hud.update(player.x, player.z, player.yaw, npcs);

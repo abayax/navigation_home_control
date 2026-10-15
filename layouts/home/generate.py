@@ -28,7 +28,7 @@ rooms = [
   dict(name="Living Room", rect=R(X_LV, Y0, X_E, Y_KT), floor="#e0b98a", pattern="wood"),
   dict(name="Hallway", rects=[R(X_H1, Y_C2, X_H2, Y_BA2), R(X_H2, Y_C3, X_LV, Y_KT), R(X_H2, Y_KT, X_K, Y_FD)], floor="#e9c46a", pattern="wood"),
   dict(name="Kitchen", rect=R(X_K, Y_KT, X_E, Y_KB), floor="#fdffb6", pattern="tile"),
-  dict(name="Garage", rect=R(X_K, Y_KB, X_E, Y_GB), floor="#c9ccd1", pattern="concrete"),
+  dict(name="Garage", rect=R(X_K, Y_KB, X_E, Y_GB), floor="#c9ccd1", pattern="concrete", allowBike=True),
   dict(name="Bathroom 1", rect=R(X_B1W, Y_BA2, X_H1, Y_BA1), floor="#a2d2ff", pattern="tile"),
   dict(name="Bedroom 1 (Men's)", rects=[R(X_B1W, Y_BA1, X_H2, Y_FAMT), R(X_H1, Y_BA2, X_H2, Y_BA1)], floor="#cdb4db", pattern="carpet"),
   dict(name="Family Room", rect=R(X_FAMW, Y_FAMT, X_H2, Y_FAMB), floor="#d4a373", pattern="wood"),
@@ -90,7 +90,7 @@ PX = {'bed2': (196,454,348,577), 'bath2': (196,577,348,657), 'bed3': (405,452,57
 FTR = {'bed2': (X0,Y0,X_H1,Y_B2), 'bath2': (X0,Y_B2,X_H1,Y_BA2), 'bed3': (X_H2,Y0,X_LV,Y_B3),
        'living': (X_LV,Y0,X_E,Y_KT), 'kitchen': (X_K,Y_KT,X_E,Y_KB), 'garage': (X_K,Y_KB,X_E,Y_GB),
        'family': (X_FAMW,Y_FAMT,X_H2,Y_FAMB), 'bed1': (X_B1W,Y_BA1,X_H2,Y_FAMT)}
-DEFAULT = {'toilet': [0.45, 0.7], 'chair': [0.5, 0.5], 'tree': [0.5, 0.5], 'plant': [0.5, 0.5]}
+DEFAULT = {'bike': [0.5, 1.15], 'toilet': [0.45, 0.7], 'chair': [0.5, 0.5], 'tree': [0.5, 0.5], 'plant': [0.5, 0.5]}
 furniture, boxes = [], []
 
 def footprint(size, rot):
@@ -158,6 +158,8 @@ place('kitchen', 'chair', tx + 0.75, tz, None, -90, color='#f3722c')
 gx = (632 + 726) / 2; gx = X_K * FT + (gx - 475) / (732 - 475) * (X_E - X_K) * FT
 place('garage', 'box', gx - 0.36, 0, [0.7, 0.7], 0, 'N', height=0.95, color='#f8f9fa')
 place('garage', 'box', gx + 0.36, 0, [0.7, 0.7], 0, 'N', height=0.95, color='#e9ecef')
+# Kid's green bike, parked against the garage's west wall, facing the garage door
+place('garage', 'bike', 0, 11.5, None, 0, 'W', color='#2dc653')
 # Bedroom 1
 add('bed1', 'desk', (256,778,285,840), [1.4, 0.6], 90, 'SW')
 add('bed1', 'bed', (301,779,400,830), [1.52, 2.03], -90, 'SE', color='#90dbf4')

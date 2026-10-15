@@ -8,6 +8,7 @@ export class Object3D {
     this.rotation = vec();
     this.scale = vec();
     this.children = [];
+    this.userData = {};
   }
   add(...c) {
     this.children.push(...c);

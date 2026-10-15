@@ -6,24 +6,24 @@ import * as THREE from 'three';
 
 const KID_COLORS = {
   skin: '#ffd2b0',
-  hair: '#5a3825',
-  shirt: '#ff7a59',
-  pants: '#3f6fd8',
+  hair: '#1a1a1a',
+  shirt: '#ff8fc7', // pink dress
+  pants: '#ffd2b0', // bare legs under the dress
   shoes: '#ffffff',
-  cap: '#ffd60a',
+  tie: '#ff4d94', // hair tie
 };
 
 export const HIP_HEIGHT = 0.5; // unscaled hip pivot height (for sitting)
 
 export function createKid(colors = {}) {
-  return createPerson({ colors: { ...KID_COLORS, ...colors }, hair: 'cap' });
+  return createPerson({ colors: { ...KID_COLORS, ...colors }, hair: 'ponytail', dress: true });
 }
 
 /**
- * options: colors {skin, hair, shirt, pants, shoes, cap}, scale (overall size),
- * headScale, hair: 'cap' | 'short' | 'long', glasses: boolean
+ * options: colors {skin, hair, shirt, pants, shoes, cap, tie}, scale (overall size),
+ * headScale, hair: 'cap' | 'short' | 'long' | 'ponytail', glasses, dress (skirt in the shirt colour)
  */
-export function createPerson({ colors = {}, scale = 1, headScale = 1, hair = 'short', glasses = false } = {}) {
+export function createPerson({ colors = {}, scale = 1, headScale = 1, hair = 'short', glasses = false, dress = false } = {}) {
   const c = { ...KID_COLORS, ...colors };
   const mat = (color) => new THREE.MeshLambertMaterial({ color });
   const group = new THREE.Group();
@@ -55,6 +55,7 @@ export function createPerson({ colors = {}, scale = 1, headScale = 1, hair = 'sh
   for (const leg of [legL, legR]) mesh(new THREE.BoxGeometry(0.14, 0.08, 0.22), c.shoes, 0, -0.46, 0.04, leg);
 
   mesh(new THREE.CapsuleGeometry(0.18, 0.22, 4, 12), c.shirt, 0, 0.72, 0);
+  if (dress) mesh(new THREE.CylinderGeometry(0.17, 0.3, 0.32, 20), c.shirt, 0, 0.46, 0); // skirt
 
   const armL = limb(0.4, 0.055, c.shirt, -0.235, 0.88, 0);
   const armR = limb(0.4, 0.055, c.shirt, 0.235, 0.88, 0);
@@ -74,6 +75,10 @@ export function createPerson({ colors = {}, scale = 1, headScale = 1, hair = 'sh
     const cap = h(new THREE.SphereGeometry(0.225, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), c.cap, 0, 0.05, 0);
     cap.scale.set(1, 0.8, 1);
     h(new THREE.CylinderGeometry(0.16, 0.16, 0.025, 20, 1, false, -Math.PI / 2, Math.PI), c.cap, 0, 0.06, 0.15);
+  } else if (hair === 'ponytail') {
+    h(new THREE.SphereGeometry(0.045, 10, 8), c.tie ?? '#ff4d94', 0, 0.06, -0.25); // hair tie
+    const tail = h(new THREE.CapsuleGeometry(0.065, 0.32, 4, 10), c.hair, 0, -0.13, -0.27);
+    tail.rotation.x = 0.25;
   } else if (hair === 'long') {
     h(new THREE.BoxGeometry(0.4, 0.42, 0.16), c.hair, 0, -0.12, -0.12);
     h(new THREE.SphereGeometry(0.09, 12, 10), c.hair, 0, 0.12, -0.25); // bun
@@ -108,7 +113,8 @@ export function createPerson({ colors = {}, scale = 1, headScale = 1, hair = 'sh
     // speed: signed m/s (negative = walking backwards)
     // y: feet height, groundY: height of the surface below (for the blob shadow)
     // sit: 0 = standing, 1 = sitting (legs forward); y is then the group height
-    update(dt, speed, x, z, yaw, y = 0, groundY = 0, sit = 0) {
+    // ride: 1 = on a bike (legs pedal, hands on the handlebar)
+    update(dt, speed, x, z, yaw, y = 0, groundY = 0, sit = 0, ride = 0) {
       group.position.set(x, y, z);
       group.rotation.y = yaw;
 
@@ -118,7 +124,7 @@ export function createPerson({ colors = {}, scale = 1, headScale = 1, hair = 'sh
 
       // Airborne pose: arms up, knees tucked
       const height = y - groundY;
-      air += ((height > 0.05 && sit === 0 ? 1 : 0) - air) * Math.min(1, dt * 12);
+      air += ((height > 0.05 && sit === 0 && !ride ? 1 : 0) - air) * Math.min(1, dt * 12);
 
       const s = Math.sin(phase) * swing * (1 - air) * (1 - sit);
       legL.rotation.x = s + air * 0.5 - sit * 1.45;
@@ -127,7 +133,13 @@ export function createPerson({ colors = {}, scale = 1, headScale = 1, hair = 'sh
       armR.rotation.x = s * 0.9 - air * 2.6 - sit * 0.5;
       armL.rotation.z = -air * 0.35;
       armR.rotation.z = air * 0.35;
-      body.position.y = moving ? Math.abs(Math.cos(phase)) * 0.04 * (swing / 0.8) : Math.sin(performance.now() / 600) * 0.005;
+      if (ride) {
+        const pedal = Math.sin(phase * 1.5) * 0.45;
+        legL.rotation.x = -1.0 + pedal;
+        legR.rotation.x = -1.0 - pedal;
+        armL.rotation.x = armR.rotation.x = -1.25;
+      }
+      body.position.y = ride ? 0 : moving ? Math.abs(Math.cos(phase)) * 0.04 * (swing / 0.8) : Math.sin(performance.now() / 600) * 0.005;
 
       blob.visible = sit < 0.5;
       blob.position.y = groundY - y + 0.04;

@@ -160,6 +160,7 @@ export function buildHouse(data) {
   const walls = []; // { ax, az, bx, bz, r }  (2D centre-lines, used for collision + camera)
   const fences = [];
   const boxes = []; // furniture AABBs { minX, maxX, minZ, maxZ }
+  const bikes = []; // rideable bikes { object, box, x, z, yaw }
   const labels = new THREE.Group();
   labels.visible = false;
 
@@ -347,7 +348,9 @@ export function buildHouse(data) {
     if (f.size) {
       const swap = Math.abs(Math.sin(rot)) > 0.5;
       const [w, d] = swap ? [f.size[1], f.size[0]] : f.size;
-      boxes.push({ minX: x - w / 2, maxX: x + w / 2, minZ: z - d / 2, maxZ: z + d / 2, top: f.top, bouncy: f.bouncy, item, rot, size: f.size });
+      const box = { minX: x - w / 2, maxX: x + w / 2, minZ: z - d / 2, maxZ: z + d / 2, top: f.top, bouncy: f.bouncy, item, rot, size: f.size };
+      boxes.push(box);
+      if (item.type === 'bike') bikes.push({ object: f.object, box, x, z, yaw: rot });
     }
   }
 
@@ -366,6 +369,7 @@ export function buildHouse(data) {
     walls,
     fences,
     windows: windowSegs,
+    bikes,
     bounds,
     colliders: { segments: [...walls, ...fences], boxes },
   };
