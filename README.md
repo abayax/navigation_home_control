@@ -28,11 +28,12 @@ Options: `--layout office` opens straight into a layout, `--no-browser` just ser
 |---|---|---|
 | Walk forward | ↑ (or W), hold | ▲ button, hold |
 | Walk back toward the camera (see her face) | ↓ (or S), hold | ▼ button, hold |
-| Turn 90° left / right | ← / → (or A / D), one tap = 90° | ↰ / ↱ buttons, or swipe left / right |
-| Jump | Space | ⤒ button, or swipe up |
+| Turn 90° left / right | ← / → (or A / D), one tap = 90° | ↰ / ↱ buttons |
+| Walk + steer smoothly | drag on the view with the mouse | drag on the view like a joystick: up = forward, down = back, left/right = steer |
+| Jump | Space | ⤒ button |
 | Get on / off the bike (stand next to it) | Space | ⤒ button |
 | Climb a tree / climb down (stand next to it) | Space | ⤒ button |
-| Run (2.6× faster) | double-tap ↑ and hold (or hold Shift) | double-tap ▲ and hold |
+| Run (2.6× faster) | double-tap ↑ and hold (or hold Shift) | double-tap ▲ and hold, or tap the view then drag |
 | Map view | M | 🗺️ button or tap the minimap |
 | Switch layout | 🏠 button | 🏠 button |
 
@@ -60,7 +61,7 @@ When the kid gets close (about 2 m, not through a wall), a speech bubble pops up
 | `src/layouts.js` | Loads the chosen layout and builds the 🏠 picker |
 | `src/house.js` | Builds floors, walls, door openings and the backyard fence from the JSON |
 | `src/furniture.js` | Simple kid-style furniture (bed, sofa, car, tree, slide…) |
-| `src/input.js` | Keyboard, touch buttons, swipes |
+| `src/input.js` | Keyboard, touch buttons, drag-to-walk joystick |
 | `src/collision.js` | Solid walls and furniture, keeps the camera inside rooms |
 | `src/physics.js` | Jumping, gravity, landing on furniture, trampoline bounces |
 | `src/person.js` | The kid and the adults (shared cartoon person model, walking/sitting/jumping poses) |

@@ -15,6 +15,7 @@ const BACK_SPEED = 1.5;
 const RUN_FACTOR = 2.6;
 const RUN_ANIM_SPEED = WALK_SPEED * 1.15; // running: same leg rhythm as walking, longer stride
 const TURN_SPEED = Math.PI * 2.4; // rad/s -> a 90° turn takes ~0.2 s
+const STEER_RATE = 2.4; // rad/s at full drag sideways
 const CAM_DIST = 3.4;
 const CAM_HEIGHT = 1.9; // stays below door lintels (2.1 m)
 const BIKE_SPEED = 3.6;
@@ -258,6 +259,11 @@ function updateCamera(dt) {
 
 // ---------- game loop ----------
 function update(dt) {
+  // Smooth steering from dragging the screen
+  if (input.steer) {
+    player.yaw += input.steer * STEER_RATE * dt;
+    player.targetYaw += input.steer * STEER_RATE * dt;
+  }
   player.targetYaw += input.consumeTurns() * (Math.PI / 2);
   const diff = player.targetYaw - player.yaw;
   const step = TURN_SPEED * dt;

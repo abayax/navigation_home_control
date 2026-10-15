@@ -169,6 +169,41 @@ body.touch #prompt {
   color: #4a3b8f;
 }
 
+/* ---- Drag joystick (appears under the finger) ---- */
+
+#drag-ring {
+  position: fixed;
+  left: -50px;
+  top: -50px;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.15);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+#drag-ring.show {
+  opacity: 1;
+}
+
+#drag-ring .knob {
+  position: absolute;
+  left: 30px;
+  top: 30px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.15);
+}
+
+#drag-ring.run .knob {
+  background: #ffd84d;
+}
+
 /* ---- Layout picker ---- */
 
 #layout-panel {

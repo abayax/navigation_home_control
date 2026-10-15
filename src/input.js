@@ -6,10 +6,12 @@
 //   Space        jump
 //   Shift        run (also: double-tap forward)
 //   M            toggle map view
-// Touch: on-screen buttons for the same actions (double-tap ▲ to run), plus swipe left/right to turn
-// and swipe up to jump.
+// Touch: on-screen buttons for the same actions (double-tap ▲ to run), or drag
+// on the 3D view like a joystick (up/down walk, left/right steer); tap then
+// touch-and-drag again to run. Mouse dragging works the same on a computer.
 
-const SWIPE_MIN_PX = 50;
+const DRAG_DEAD_PX = 14; // drags smaller than this do nothing
+const DRAG_MAX_PX = 90; // full steering at this distance
 const JUMP_BUFFER_MS = 150; // a jump pressed just before landing still counts
 const DOUBLE_TAP_MS = 300; // two forward presses this close together = run
 
@@ -22,22 +24,25 @@ export class Input {
     this.jumpAt = -Infinity; // time of the last jump press
     this.lastForwardAt = -Infinity; // time of the last forward press
     this.dash = false; // running because forward was double-tapped
+    this.dragMove = 0; // from dragging the 3D view: +1 forward, -1 back
+    this.steer = 0; // from dragging: -1..1, positive = turn left
+    this.dragRun = false; // this drag started with a double tap
     this.onToggleMap = onToggleMap;
 
     this.#bindKeyboard();
     this.#bindTouchButtons();
-    this.#bindSwipe();
+    this.#bindDrag();
   }
 
   /** +1 forward, -1 backward, 0 standing still */
   get move() {
     const fwd = this.keys.has('ArrowUp') || this.keys.has('KeyW') || this.touchFwd;
     const back = this.keys.has('ArrowDown') || this.keys.has('KeyS') || this.touchBack;
-    return (fwd ? 1 : 0) - (back ? 1 : 0);
+    return Math.sign((fwd ? 1 : 0) - (back ? 1 : 0) + this.dragMove);
   }
 
   get run() {
-    return this.keys.has('ShiftLeft') || this.keys.has('ShiftRight') || (this.dash && this.move > 0);
+    return this.keys.has('ShiftLeft') || this.keys.has('ShiftRight') || ((this.dash || this.dragRun) && this.move > 0);
   }
 
   /** Forward was pressed: a second press soon after the first starts running. */
@@ -141,27 +146,51 @@ export class Input {
     document.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
   }
 
-  #bindSwipe() {
-    // Swipe on the 3D view (not on buttons): swipe left = turn left, swipe right = turn right,
-    // swipe up = jump
-    const starts = new Map();
-    const canvasHost = document.getElementById('app');
-    canvasHost.addEventListener('pointerdown', (e) => {
-      if (e.pointerType !== 'mouse') starts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  #bindDrag() {
+    // Drag on the 3D view (touch or mouse) like a joystick: up = walk forward,
+    // down = walk back, left/right = steer. Tap then quickly touch again and
+    // drag = run for that drag.
+    const host = document.getElementById('app');
+    const ring = document.getElementById('drag-ring');
+    const knob = ring.querySelector('.knob');
+    let active = null; // { id, x, y, t }
+    let lastTapAt = -Infinity;
+
+    host.addEventListener('pointerdown', (e) => {
+      if (active) return; // one finger steers
+      e.preventDefault();
+      host.setPointerCapture(e.pointerId);
+      const now = performance.now();
+      active = { id: e.pointerId, x: e.clientX, y: e.clientY, t: now, moved: false };
+      this.dragRun = now - lastTapAt < DOUBLE_TAP_MS;
+      ring.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+      knob.style.transform = 'translate(0px, 0px)';
+      ring.classList.add('show');
+      ring.classList.toggle('run', this.dragRun);
+    });
+    host.addEventListener('pointermove', (e) => {
+      if (!active || e.pointerId !== active.id) return;
+      let dx = e.clientX - active.x, dy = e.clientY - active.y;
+      const len = Math.hypot(dx, dy);
+      if (len > DRAG_DEAD_PX) active.moved = true;
+      if (len > DRAG_MAX_PX) { dx *= DRAG_MAX_PX / len; dy *= DRAG_MAX_PX / len; }
+      knob.style.transform = `translate(${dx}px, ${dy}px)`;
+      this.dragMove = dy < -DRAG_DEAD_PX ? 1 : dy > DRAG_DEAD_PX ? -1 : 0;
+      const side = Math.abs(dx) > DRAG_DEAD_PX ? (dx - Math.sign(dx) * DRAG_DEAD_PX) / (DRAG_MAX_PX - DRAG_DEAD_PX) : 0;
+      this.steer = -side; // drag right = turn right (negative yaw)
     });
     const end = (e) => {
-      const s = starts.get(e.pointerId);
-      starts.delete(e.pointerId);
-      if (!s) return;
-      const dx = e.clientX - s.x;
-      const dy = e.clientY - s.y;
-      if (Math.abs(dx) > SWIPE_MIN_PX && Math.abs(dx) > Math.abs(dy) * 1.5) {
-        this.pendingTurns += dx < 0 ? 1 : -1;
-      } else if (-dy > SWIPE_MIN_PX && -dy > Math.abs(dx) * 1.5) {
-        this.jump();
-      }
+      if (!active || e.pointerId !== active.id) return;
+      const wasTap = !active.moved && performance.now() - active.t < 250;
+      lastTapAt = wasTap ? performance.now() : -Infinity;
+      active = null;
+      this.dragMove = 0;
+      this.steer = 0;
+      this.dragRun = false;
+      ring.classList.remove('show');
     };
-    canvasHost.addEventListener('pointerup', end);
-    canvasHost.addEventListener('pointercancel', (e) => starts.delete(e.pointerId));
+    host.addEventListener('pointerup', end);
+    host.addEventListener('pointercancel', end);
   }
+
 }
