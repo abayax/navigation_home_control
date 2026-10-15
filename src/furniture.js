@@ -149,7 +149,8 @@ const builders = {
   suv({ color = '#f8f9fa' }, g) {
     const glass = '#1b1f24';
     box(g, 1.92, 0.62, 4.75, color, 0, 0.51, 0); // body
-    box(g, 1.72, 0.6, 2.5, glass, 0, 1.12, -0.25); // glass greenhouse + panoramic roof
+    box(g, 1.72, 0.6, 2.5, color, 0, 1.12, -0.25); // cabin with white roof
+    for (const sx of [-1, 1]) box(g, 0.02, 0.38, 2.3, glass, sx * 0.865, 1.13, -0.25); // side windows
     const windshield = box(g, 1.72, 0.05, Math.hypot(0.75, 0.6), glass, 0, 1.12, 1.375);
     windshield.rotation.x = Math.atan2(0.6, 0.75);
     const rear = box(g, 1.72, 0.05, Math.hypot(0.5, 0.52), glass, 0, 1.16, -1.75);
