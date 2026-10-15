@@ -49,6 +49,7 @@ sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048);
 Object.assign(sun.shadow.camera, { left: -16, right: 16, top: 16, bottom: -16, near: 1, far: 60 });
 sun.shadow.bias = -0.0005;
+sun.shadow.normalBias = 0.02; // stops "shadow acne" stripes on walls
 scene.add(sun, sun.target);
 
 const house = buildHouse(data);
@@ -250,11 +251,13 @@ function updateCamera(dt) {
   const t = mapT * mapT * (3 - 2 * mapT); // smoothstep
   camera.position.lerpVectors(followPos, mapPos, t);
   camera.lookAt(new THREE.Vector3().lerpVectors(followTarget, mapTarget, t));
-  house.labels.visible = mapT > 0.5;
 
-  // Keep the shadow-casting area centred on the player
-  sun.position.set(player.x + 8, 20, player.z + 6);
-  sun.target.position.set(player.x, 0, player.z);
+  // Keep the shadow-casting area centred on the player, snapped to whole shadow-map
+  // texels so shadows don't shimmer as she moves
+  const texel = (sun.shadow.camera.right - sun.shadow.camera.left) / sun.shadow.mapSize.x;
+  const sx = Math.round(player.x / texel) * texel, sz = Math.round(player.z / texel) * texel;
+  sun.position.set(sx + 8, 20, sz + 6);
+  sun.target.position.set(sx, 0, sz);
 }
 
 // ---------- game loop ----------

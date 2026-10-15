@@ -7,6 +7,8 @@ const OPEN_PLAN_WIDTH = 2.5; // openings this wide or wider get no lintel
 const WINDOW_SILL = 0.9; // default window bottom (m above floor)
 const WINDOW_TOP = 2.1; // default window top
 const EXTERIOR_WALL = '#f3e6d3'; // outside of the house
+const Z_GAP = 0.001; // tiny gaps that keep coplanar faces apart
+const TRIM_IN = 0.005;
 const WALL_TINT_WHITE = 0.45; // wall colour = room floor colour mixed with this much white
 const FENCE_H = 1.0;
 const FENCE_T = 0.08;
@@ -153,34 +155,6 @@ function wallTexture(color, wallHeight) {
   return tex;
 }
 
-// ---------- room name labels (shown in map view) ----------
-
-function makeLabel(text) {
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-  const font = 'bold 56px "Avenir Next", "Trebuchet MS", sans-serif';
-  ctx.font = font;
-  const w = Math.ceil(ctx.measureText(text).width) + 48;
-  canvas.width = w;
-  canvas.height = 88;
-  ctx.font = font;
-  ctx.fillStyle = 'rgba(255,255,255,0.92)';
-  ctx.beginPath();
-  ctx.roundRect(0, 0, w, 88, 44);
-  ctx.fill();
-  ctx.fillStyle = '#4a3b8f';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(text, w / 2, 46);
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false }));
-  const height = 1.1;
-  sprite.scale.set((height * w) / 88, height, 1);
-  sprite.renderOrder = 10;
-  return sprite;
-}
-
 // ---------- main builder ----------
 
 export function buildHouse(data) {
@@ -190,8 +164,6 @@ export function buildHouse(data) {
   const fences = [];
   const boxes = []; // furniture AABBs { minX, maxX, minZ, maxZ }
   const bikes = []; // rideable bikes { object, box, x, z, yaw }
-  const labels = new THREE.Group();
-  labels.visible = false;
 
   // Ground
   const ground = new THREE.Mesh(
@@ -201,11 +173,10 @@ export function buildHouse(data) {
   ground.receiveShadow = true;
   group.add(ground);
 
-  // Floors + labels
+  // Floors
   for (const room of data.rooms) {
     const { tex, metersPerTile } = floorTexture(room.pattern, room.floor);
     const material = new THREE.MeshLambertMaterial({ map: tex });
-    let largest = null;
     for (const [x0, z0, x1, z1] of roomRects(room)) {
       const w = x1 - x0, d = z1 - z0;
       // Map UVs to world meters so the pattern lines up across a room's rectangles
@@ -217,14 +188,8 @@ export function buildHouse(data) {
       floor.position.set((x0 + x1) / 2, room.outdoor ? 0.01 : 0.02, (z0 + z1) / 2);
       floor.receiveShadow = true;
       group.add(floor);
-      if (!largest || w * d > largest.area) largest = { area: w * d, x: (x0 + x1) / 2, z: (z0 + z1) / 2 };
     }
-
-    const label = makeLabel(room.name);
-    label.position.set(largest.x, H + 1.2, largest.z);
-    labels.add(label);
   }
-  group.add(labels);
 
   // Collect wall intervals per line. Indoor room edges become walls.
   // Outdoor edges become fence, except where they meet a wall or another
@@ -357,10 +322,11 @@ export function buildHouse(data) {
       lineBox(orient, c, cursor, wa, 0, H, WALL_T, mats);
       lineBox(orient, c, wa, wb, 0, w.sill, WALL_T, mats); // below the window
       lineBox(orient, c, wa, wb, w.top, H, WALL_T, mats); // above the window
-      lineBox(orient, c, wa - 0.04, wb + 0.04, w.sill - 0.04, w.sill, WALL_T + 0.08, frameMat); // sill
-      lineBox(orient, c, wa, wb, w.top, w.top + 0.04, WALL_T + 0.04, frameMat); // head
-      lineBox(orient, c, wa - 0.04, wa, w.sill, w.top, WALL_T + 0.04, frameMat); // jambs
-      lineBox(orient, c, wb, wb + 0.04, w.sill, w.top, WALL_T + 0.04, frameMat);
+      // Trim pokes 5 mm into the hole so its faces never coincide with the wall's (flicker)
+      lineBox(orient, c, wa - 0.04, wb + 0.04, w.sill - 0.04, w.sill + TRIM_IN, WALL_T + 0.08, frameMat); // sill
+      lineBox(orient, c, wa, wb, w.top - TRIM_IN, w.top + 0.04, WALL_T + 0.04, frameMat); // head
+      lineBox(orient, c, wa - 0.04, wa + TRIM_IN, w.sill, w.top, WALL_T + 0.04, frameMat); // jambs
+      lineBox(orient, c, wb - TRIM_IN, wb + 0.04, w.sill, w.top, WALL_T + 0.04, frameMat);
       cursor = wb;
     }
     lineBox(orient, c, cursor, b, 0, H, WALL_T, mats);
@@ -383,7 +349,8 @@ export function buildHouse(data) {
       const a = s - WALL_T / 2, b = e + WALL_T / 2; // extend so corners meet
       walls.push(segmentOf(line.orient, line.c, a, b, WALL_T / 2));
       const cuts = [...new Set(breaks.filter((p) => p > s + EPS && p < e - EPS))].sort((p, q) => p - q);
-      const points = [a, ...cuts, b];
+      // Visually stop 1 mm short so an end never sits exactly on another wall's face (flicker)
+      const points = [a + Z_GAP, ...cuts, b - Z_GAP];
       for (let i = 0; i < points.length - 1; i++) wallPiece(line.orient, line.c, points[i], points[i + 1], line.windows ?? []);
     }
   }
@@ -396,7 +363,7 @@ export function buildHouse(data) {
     }
 
   for (const l of lintels)
-    lineBox(l.orient, l.c, l.along - l.width / 2 - WALL_T / 2, l.along + l.width / 2 + WALL_T / 2, DOOR_H, H, WALL_T, sideMats(l.orient, l.c, l.along));
+    lineBox(l.orient, l.c, l.along - l.width / 2 - Z_GAP, l.along + l.width / 2 + Z_GAP, DOOR_H, H, WALL_T, sideMats(l.orient, l.c, l.along));
 
   // Furniture
   for (const item of data.furniture ?? []) {
@@ -427,7 +394,6 @@ export function buildHouse(data) {
 
   return {
     group,
-    labels,
     walls,
     fences,
     windows: windowSegs,

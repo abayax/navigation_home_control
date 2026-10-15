@@ -34,7 +34,7 @@ Options: `--layout office` opens straight into a layout, `--no-browser` just ser
 | Get on / off the bike (stand next to it) | Space | ⤒ button |
 | Climb a tree / climb down (stand next to it) | Space | ⤒ button |
 | Run (2.6× faster) | double-tap ↑ and hold (or hold Shift) | double-tap ▲ and hold, or tap the view then drag |
-| Map view | M | 🗺️ button or tap the minimap |
+| Map view (top-down overview) | M | 🗺️ button or tap the minimap |
 | Switch layout | 🏠 button | 🏠 button |
 
 Jumping: the kid jumps about 1 m and can land on beds, couches, chairs, tables, desks, counters and benches. Walk off the edge to get down. Taller things (fridge, bookshelves, TV, cars, trees) are out of reach, and walls and fences always block. The trampoline keeps bouncing; jump while bouncing to go much higher.
