@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { buildHouse, roomAt } from './house.js';
 import { createKid, HIP_HEIGHT } from './person.js';
-import { BIKE_SEAT } from './furniture.js';
+import { BIKE_SEAT, TREE_PERCH } from './furniture.js';
 import { Input } from './input.js';
 import { resolveCollisions, cameraDistance, lineBlocked } from './collision.js';
 import { stepVertical } from './physics.js';
@@ -12,7 +12,8 @@ import { Npc, findSpots, loadNpcDefs } from './npc.js';
 
 const WALK_SPEED = 2.4; // m/s
 const BACK_SPEED = 1.5;
-const RUN_FACTOR = 1.8;
+const RUN_FACTOR = 2.6;
+const RUN_ANIM_SPEED = WALK_SPEED * 1.15; // running: same leg rhythm as walking, longer stride
 const TURN_SPEED = Math.PI * 2.4; // rad/s -> a 90° turn takes ~0.2 s
 const CAM_DIST = 3.4;
 const CAM_HEIGHT = 1.9; // stays below door lintels (2.1 m)
@@ -20,6 +21,8 @@ const BIKE_SPEED = 3.6;
 const BIKE_BACK_SPEED = 1.2;
 const BIKE_RADIUS = 0.3;
 const MOUNT_DISTANCE = 1.1; // how close to a bike you must be to hop on
+const TREE_DISTANCE = 1.0; // how close to a trunk you must be to climb
+const CLIMB_TIME = 0.9; // seconds to climb up or down
 const FACING = { north: Math.PI, south: 0, east: Math.PI / 2, west: -Math.PI / 2 };
 
 const { layouts, current, data } = await loadLayout();
@@ -144,6 +147,56 @@ function dismount() {
   }
 }
 
+// ---------- climbing trees ----------
+let climb = null; // { tree, phase: 'up' | 'top' | 'down', t, from, top }
+
+function nearestTree() {
+  let best = null, bestD = TREE_DISTANCE + player.radius;
+  for (const b of boxes) {
+    if (b.item?.type !== 'tree') continue;
+    const cx = (b.minX + b.maxX) / 2, cz = (b.minZ + b.maxZ) / 2;
+    const d = Math.hypot(cx - player.x, cz - player.z);
+    if (d < bestD && !lineBlocked(player.x, player.z, cx, cz, house.colliders.segments)) { best = b; bestD = d; }
+  }
+  return best;
+}
+
+function startClimb(tree) {
+  const top = { x: (tree.minX + tree.maxX) / 2, z: (tree.minZ + tree.maxZ) / 2, y: TREE_PERCH[tree.item.kind ?? 'round'] ?? TREE_PERCH.round };
+  climb = { tree, phase: 'up', t: 0, from: { x: player.x, z: player.z }, top };
+  player.vy = 0;
+  faceBack = false;
+}
+
+// Moves the kid along the climb; returns the kid's pose for this frame
+function updateClimb(dt) {
+  if (climb.phase === 'top') {
+    if (input.consumeJump()) {
+      climb.phase = 'down';
+      climb.t = 0;
+    }
+  } else {
+    climb.t = Math.min(1, climb.t + dt / CLIMB_TIME);
+  }
+  const { from, top } = climb;
+  const k = climb.phase === 'up' ? climb.t : climb.phase === 'down' ? 1 - climb.t : 1;
+  const ease = k * k * (3 - 2 * k);
+  // move to the trunk quickly, then up
+  const h = Math.min(1, k * 2.5);
+  player.x = from.x + (top.x - from.x) * h;
+  player.z = from.z + (top.z - from.z) * h;
+  player.y = top.y * ease;
+  if (climb.phase === 'up' && climb.t >= 1) climb.phase = 'top';
+  if (climb.phase === 'down' && climb.t >= 1) {
+    climb = null;
+    player.y = 0;
+    player.grounded = true;
+    player.support = null;
+    return { sit: 0 };
+  }
+  return { sit: climb.phase === 'top' ? 1 : 0 };
+}
+
 function showPrompt(text, seconds = 0) {
   if (seconds) promptUntil = performance.now() + seconds * 1000;
   else if (performance.now() < promptUntil) return; // a timed message is showing
@@ -210,13 +263,33 @@ function update(dt) {
   const step = TURN_SPEED * dt;
   player.yaw += Math.abs(diff) <= step ? diff : Math.sign(diff) * step;
 
-  // Hop on / off a bike with jump
   const touch = document.body.classList.contains('touch');
+  const jumpKey = touch ? 'Tap ⤒' : 'Press Space';
+
+  // Up a tree: only turning works until you climb down
+  if (climb) {
+    const { sit } = updateClimb(dt);
+    if (climb) {
+      const y = sit ? player.y - HIP_HEIGHT : player.y;
+      kid.update(dt, 0, player.x, player.z, player.yaw, y, sit ? y : 0, sit);
+      showPrompt(climb.phase === 'top' ? `🌳 ${jumpKey} to climb down` : '');
+      for (const npc of npcs) npc.update(dt, player, npcs.filter((o) => o !== npc));
+      updateCamera(dt);
+      hud.update(player.x, player.z, player.yaw, npcs);
+      return;
+    }
+  }
+
+  // Hop on / off a bike, or climb a tree, with jump
   if (riding) {
     if (input.consumeJump()) dismount();
   } else if (player.grounded && player.y < 0.05 && input.jumpQueued && nearestBike()) {
     input.consumeJump();
     mount(nearestBike());
+  } else if (player.grounded && player.y < 0.05 && input.jumpQueued && nearestTree()) {
+    input.consumeJump();
+    startClimb(nearestTree());
+    return;
   }
 
   const move = input.move;
@@ -255,12 +328,14 @@ function update(dt) {
     for (const wheel of riding.object.userData.wheels ?? []) wheel.rotation.z -= (speed * dt) / 0.24;
     const seatX = player.x + fx * BIKE_SEAT.z, seatZ = player.z + fz * BIKE_SEAT.z;
     kid.update(dt, Math.abs(speed), seatX, seatZ, player.yaw, BIKE_SEAT.y - HIP_HEIGHT, 0, 0, 1);
-    showPrompt(touch ? 'Tap ⤒ to get off' : 'Press Space to get off');
+    showPrompt(`${jumpKey} to get off`);
   } else {
     const groundY = stepVertical(player, boxes, dt, () => input.consumeJump());
-    const animSpeed = player.grounded ? (faceBack ? Math.abs(speed) : speed) : 0;
+    let animSpeed = player.grounded ? (faceBack ? Math.abs(speed) : speed) : 0;
+    if (Math.abs(animSpeed) > RUN_ANIM_SPEED) animSpeed = Math.sign(animSpeed) * RUN_ANIM_SPEED;
     kid.update(dt, animSpeed, player.x, player.z, bodyYaw, player.y, groundY);
-    showPrompt(player.grounded && player.y < 0.05 && nearestBike() ? (touch ? '🚲 Tap ⤒ to ride' : '🚲 Press Space to ride') : '');
+    const onGround = player.grounded && player.y < 0.05;
+    showPrompt(onGround && nearestBike() ? `🚲 ${jumpKey} to ride` : onGround && nearestTree() ? `🌳 ${jumpKey} to climb` : '');
   }
 
   for (const npc of npcs) npc.update(dt, player, npcs.filter((o) => o !== npc));

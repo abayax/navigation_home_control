@@ -6,6 +6,7 @@ const DOOR_H = 2.1; // height of the opening under a lintel
 const OPEN_PLAN_WIDTH = 2.5; // openings this wide or wider get no lintel
 const WINDOW_SILL = 0.9; // default window bottom (m above floor)
 const WINDOW_TOP = 2.1; // default window top
+const EXTERIOR_WALL = '#f3e6d3'; // outside of the house
 const FENCE_H = 1.0;
 const FENCE_T = 0.08;
 const EPS = 0.001;
@@ -122,6 +123,26 @@ function floorTexture(pattern, color) {
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
   tex.anisotropy = 4;
   return { tex, metersPerTile };
+}
+
+// Wall paint: room colour with a white baseboard and a soft shade under the ceiling
+function wallTexture(color, wallHeight) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 8;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+  const px = (m) => Math.round((m / wallHeight) * canvas.height);
+  ctx.fillStyle = color;
+  ctx.fillRect(0, 0, 8, 256);
+  ctx.fillStyle = new THREE.Color(color).offsetHSL(0, 0, -0.04).getStyle();
+  ctx.fillRect(0, 0, 8, px(0.06)); // soft shade at the top
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 256 - px(0.12), 8, px(0.12)); // baseboard
+  ctx.fillStyle = 'rgba(0,0,0,0.12)';
+  ctx.fillRect(0, 256 - px(0.12) - 2, 8, 2); // its top edge
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
 }
 
 // ---------- room name labels (shown in map view) ----------
@@ -278,17 +299,40 @@ export function buildHouse(data) {
   }
 
   // Build meshes
-  const wallMat = new THREE.MeshLambertMaterial({ color: '#fff6e6' });
   const fenceMat = new THREE.MeshLambertMaterial({ color: '#c08552' });
   const frameMat = new THREE.MeshLambertMaterial({ color: '#ffffff' });
+  const wallTopMat = new THREE.MeshLambertMaterial({ color: '#f5efe6' });
 
-  // A box along a line, from `from` to `to`, between heights y0 and y1
+  // Each side of a wall is painted in the colour of the room it faces (a light
+  // tint of the room's floor colour unless the room sets "wall"), with a white
+  // baseboard. Outside faces get the exterior colour.
+  const wallMats = new Map();
+  const wallMaterial = (color) => {
+    if (!wallMats.has(color)) wallMats.set(color, new THREE.MeshLambertMaterial({ map: wallTexture(color, H) }));
+    return wallMats.get(color);
+  };
+  const sideMaterial = (x, z) => {
+    const room = roomAt(data.rooms, x, z);
+    if (!room || room.outdoor) return wallMaterial(data.exteriorWall ?? EXTERIOR_WALL);
+    return wallMaterial(room.wall ?? new THREE.Color(room.floor).lerp(new THREE.Color('#ffffff'), 0.72).getStyle());
+  };
+  // Materials for a box along a line: [+x, -x, +y, -y, +z, -z] faces
+  const sideMats = (orient, c, mid) => orient === 'h'
+    ? [wallTopMat, wallTopMat, wallTopMat, wallTopMat, sideMaterial(mid, c + 0.2), sideMaterial(mid, c - 0.2)]
+    : [sideMaterial(c + 0.2, mid), sideMaterial(c - 0.2, mid), wallTopMat, wallTopMat, wallTopMat, wallTopMat];
+
+  // A box along a line, from `from` to `to`, between heights y0 and y1.
+  // Wall boxes get texture v = height / wall height, so baseboards line up.
   function lineBox(orient, c, from, to, y0, y1, thick, material) {
     const len = to - from, h = y1 - y0;
     if (len < 0.005 || h < 0.005) return;
     const geo = orient === 'h' ? new THREE.BoxGeometry(len, h, thick) : new THREE.BoxGeometry(thick, h, len);
-    const mesh = new THREE.Mesh(geo, material);
     const mid = (from + to) / 2, y = (y0 + y1) / 2;
+    if (Array.isArray(material)) {
+      const pos = geo.attributes.position, uv = geo.attributes.uv;
+      for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i), (pos.getY(i) + y) / H);
+    }
+    const mesh = new THREE.Mesh(geo, material);
     if (orient === 'h') mesh.position.set(mid, y, c);
     else mesh.position.set(c, y, mid);
     mesh.castShadow = true;
@@ -296,45 +340,55 @@ export function buildHouse(data) {
     group.add(mesh);
   }
 
-  function addSegment(orient, c, s, e, height, thick, material, list, windows = []) {
-    const a = s - thick / 2, b = e + thick / 2; // extend so corners meet
+  // One visual piece of wall from a to b, with window holes cut out
+  function wallPiece(orient, c, a, b, windows) {
+    const mats = sideMats(orient, c, (a + b) / 2);
     let cursor = a;
     for (const w of windows.filter((w) => w.b > a && w.a < b).sort((p, q) => p.a - q.a)) {
       const wa = Math.max(w.a, cursor), wb = Math.min(w.b, b);
-      lineBox(orient, c, cursor, wa, 0, height, thick, material);
-      lineBox(orient, c, wa, wb, 0, w.sill, thick, material); // below the window
-      lineBox(orient, c, wa, wb, w.top, height, thick, material); // above the window
-      lineBox(orient, c, wa - 0.04, wb + 0.04, w.sill - 0.04, w.sill, thick + 0.08, frameMat); // sill
-      lineBox(orient, c, wa, wb, w.top, w.top + 0.04, thick + 0.04, frameMat); // head
-      lineBox(orient, c, wa - 0.04, wa, w.sill, w.top, thick + 0.04, frameMat); // jambs
-      lineBox(orient, c, wb, wb + 0.04, w.sill, w.top, thick + 0.04, frameMat);
+      lineBox(orient, c, cursor, wa, 0, H, WALL_T, mats);
+      lineBox(orient, c, wa, wb, 0, w.sill, WALL_T, mats); // below the window
+      lineBox(orient, c, wa, wb, w.top, H, WALL_T, mats); // above the window
+      lineBox(orient, c, wa - 0.04, wb + 0.04, w.sill - 0.04, w.sill, WALL_T + 0.08, frameMat); // sill
+      lineBox(orient, c, wa, wb, w.top, w.top + 0.04, WALL_T + 0.04, frameMat); // head
+      lineBox(orient, c, wa - 0.04, wa, w.sill, w.top, WALL_T + 0.04, frameMat); // jambs
+      lineBox(orient, c, wb, wb + 0.04, w.sill, w.top, WALL_T + 0.04, frameMat);
       cursor = wb;
     }
-    lineBox(orient, c, cursor, b, 0, height, thick, material);
-    list.push(orient === 'h'
-      ? { ax: a, az: c, bx: b, bz: c, r: thick / 2 }
-      : { ax: c, az: a, bx: c, bz: b, r: thick / 2 });
+    lineBox(orient, c, cursor, b, 0, H, WALL_T, mats);
   }
 
-  for (const line of wallLines.values())
-    for (const [s, e] of line.intervals)
-      if (e - s > 0.02) addSegment(line.orient, line.c, s, e, H, WALL_T, wallMat, walls, line.windows);
+  const segmentOf = (orient, c, a, b, r) => (orient === 'h'
+    ? { ax: a, az: c, bx: b, bz: c, r }
+    : { ax: c, az: a, bx: c, bz: b, r });
+
+  // Where rooms start/end along a line, so each wall piece faces one room per side
+  const allRects = data.rooms.flatMap(roomRects);
+  const breaksOn = (orient, c) => allRects.flatMap(([x0, z0, x1, z1]) => (orient === 'h'
+    ? (Math.abs(z0 - c) < EPS || Math.abs(z1 - c) < EPS ? [x0, x1] : [])
+    : (Math.abs(x0 - c) < EPS || Math.abs(x1 - c) < EPS ? [z0, z1] : [])));
+
+  for (const line of wallLines.values()) {
+    const breaks = breaksOn(line.orient, line.c);
+    for (const [s, e] of line.intervals) {
+      if (e - s <= 0.02) continue;
+      const a = s - WALL_T / 2, b = e + WALL_T / 2; // extend so corners meet
+      walls.push(segmentOf(line.orient, line.c, a, b, WALL_T / 2));
+      const cuts = [...new Set(breaks.filter((p) => p > s + EPS && p < e - EPS))].sort((p, q) => p - q);
+      const points = [a, ...cuts, b];
+      for (let i = 0; i < points.length - 1; i++) wallPiece(line.orient, line.c, points[i], points[i + 1], line.windows ?? []);
+    }
+  }
   for (const line of fenceLines.values())
-    for (const [s, e] of line.intervals)
-      if (e - s > 0.02) addSegment(line.orient, line.c, s, e, FENCE_H, FENCE_T, fenceMat, fences);
+    for (const [s, e] of line.intervals) {
+      if (e - s <= 0.02) continue;
+      const a = s - FENCE_T / 2, b = e + FENCE_T / 2;
+      lineBox(line.orient, line.c, a, b, 0, FENCE_H, FENCE_T, fenceMat);
+      fences.push(segmentOf(line.orient, line.c, a, b, FENCE_T / 2));
+    }
 
-  for (const l of lintels) {
-    const h = H - DOOR_H;
-    const geo = l.orient === 'h'
-      ? new THREE.BoxGeometry(l.width + WALL_T, h, WALL_T)
-      : new THREE.BoxGeometry(WALL_T, h, l.width + WALL_T);
-    const mesh = new THREE.Mesh(geo, wallMat);
-    const y = DOOR_H + h / 2;
-    if (l.orient === 'h') mesh.position.set(l.along, y, l.c);
-    else mesh.position.set(l.c, y, l.along);
-    mesh.castShadow = true;
-    group.add(mesh);
-  }
+  for (const l of lintels)
+    lineBox(l.orient, l.c, l.along - l.width / 2 - WALL_T / 2, l.along + l.width / 2 + WALL_T / 2, DOOR_H, H, WALL_T, sideMats(l.orient, l.c, l.along));
 
   // Furniture
   for (const item of data.furniture ?? []) {

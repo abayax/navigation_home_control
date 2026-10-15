@@ -31,7 +31,8 @@ Options: `--layout office` opens straight into a layout, `--no-browser` just ser
 | Turn 90° left / right | ← / → (or A / D), one tap = 90° | ↰ / ↱ buttons, or swipe left / right |
 | Jump | Space | ⤒ button, or swipe up |
 | Get on / off the bike (stand next to it) | Space | ⤒ button |
-| Run | double-tap ↑ and hold (or hold Shift) | double-tap ▲ and hold |
+| Climb a tree / climb down (stand next to it) | Space | ⤒ button |
+| Run (2.6× faster) | double-tap ↑ and hold (or hold Shift) | double-tap ▲ and hold |
 | Map view | M | 🗺️ button or tap the minimap |
 | Switch layout | 🏠 button | 🏠 button |
 
@@ -93,6 +94,7 @@ Check all layouts (and the NPC files) any time with `node tools/validate-layout.
 Units are **meters**. `x` grows to the east, `z` grows to the south. The top-left corner of the house is (0, 0).
 
 - `rooms[]`: `rect: [x0, z0, x1, z1]` (or `rects: [[...], [...]]` for L-shaped rooms), `floor` color, `pattern` (`wood`, `tile`, `carpet`, `concrete`, `grass`). Add `"outdoor": true` for yards, which get a fence instead of walls, and `"allowBike": true` for indoor rooms where the bike may go (e.g. a garage).
+- Walls are painted per room: each side gets a light tint of that room's floor colour (or set `"wall": "#hex"` on a room), with a white baseboard. `"exteriorWall": "#hex"` at the top level sets the outside colour.
 - `doors[]`: `at: [x, z]` is a point on the wall, plus `width`. Openings 2.5 m or wider are treated as open-plan, with no lintel above.
 - `windows[]` (optional): `at: [x, z]` on a wall, `width`, optional `sill` / `top` heights in meters (default 0.9 / 2.1). Drawn as holes in the wall.
 - `fences[]` (optional): extra fence lines `{ from: [x, z], to: [x, z] }`. Gates are doors on them. Outdoor areas that touch each other stay open.

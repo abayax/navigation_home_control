@@ -368,6 +368,7 @@ const BOUNCY = new Set(['trampoline']);
 
 // Where people sit inside an SUV, in the car's local frame (driver on the +x side)
 export const BIKE_SEAT = { y: 0.6, z: -0.1 }; // rider's hips, in the bike's local frame
+export const TREE_PERCH = { round: 3.3, pine: 3.2 }; // where a climber sits, on top of the tree
 
 export const SUV_SEATS = [
   { x: 0.4, z: 0.12, door: { x: 1.45, z: 0.12 } },
