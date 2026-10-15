@@ -51,7 +51,7 @@ Options: `--layout office` opens straight into a layout, `--no-browser` just ser
 
 ## Layouts
 
-Each floor plan becomes its own layout and is saved locally. The game remembers the last one you used. You can also open a specific one directly with `?layout=<id>`, e.g. `http://localhost:5173/?layout=office`.
+Each floor plan becomes its own layout and is saved locally. New visitors start in the `default` layout from `layouts/index.json` (currently **Home**). After that, the game remembers the last one each device used. You can also open a specific one directly with `?layout=<id>`, e.g. `http://localhost:5173/?layout=office`.
 
 **Adding a new layout:**
 1. Put the floor plan (photo, sketch, screenshot or PDF, with measurements) in `plans/`.

@@ -100,7 +100,7 @@ For anything bigger than a couple of rooms, write a small `layouts/<id>/generate
 
 - Copy the original plan into the layout folder as `source.<ext>` (multiple files: `source-1.jpg`, ...) and list it in `source`.
 - Spawn in a main room, in open space, facing `north` / `south` / `east` / `west`.
-- Add or update the entry in `layouts/index.json`: `{ "id": "<id>", "name": "<name>", "created": "YYYY-MM-DD" }`. Keep existing entries.
+- Add or update the entry in `layouts/index.json`: `{ "id": "<id>", "name": "<name>", "created": "YYYY-MM-DD" }`. Keep existing entries. The top-level `"default"` is the layout new visitors see first; only change it if the user asks.
 
 ## 7. Validate (required)
 

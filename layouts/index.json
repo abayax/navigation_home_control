@@ -1,19 +1,15 @@
 {
+  "default": "home",
   "layouts": [
     {
-      "id": "home-placeholder",
-      "name": "Home (placeholder)",
-      "created": "2026-10-10"
+      "id": "home",
+      "name": "Home",
+      "created": "2026-10-14"
     },
     {
       "id": "office",
       "name": "Office",
       "created": "2026-10-13"
-    },
-    {
-      "id": "home",
-      "name": "Home",
-      "created": "2026-10-14"
     }
   ]
 }

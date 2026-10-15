@@ -1,5 +1,5 @@
 // Saved layouts live in layouts/<id>/layout.json and are listed in layouts/index.json.
-// The chosen layout comes from ?layout=<id>, else the last one used, else the first.
+// The chosen layout comes from ?layout=<id>, else the last one used, else index.json's "default".
 
 const STORAGE_KEY = 'home-explorer:layout';
 
@@ -10,9 +10,9 @@ const getJson = async (url) => {
 };
 
 export async function loadLayout() {
-  const { layouts } = await getJson('layouts/index.json');
+  const { layouts, default: defaultId } = await getJson('layouts/index.json');
   const wanted = new URLSearchParams(location.search).get('layout') ?? localStorage.getItem(STORAGE_KEY);
-  const entry = layouts.find((l) => l.id === wanted) ?? layouts[0];
+  const entry = layouts.find((l) => l.id === wanted) ?? layouts.find((l) => l.id === defaultId) ?? layouts[0];
   localStorage.setItem(STORAGE_KEY, entry.id);
   const data = await getJson(`layouts/${entry.id}/layout.json`);
   return { layouts, current: entry, data };
