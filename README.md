@@ -3,7 +3,11 @@
 A kid-friendly 3D game for walking around our home, in the browser.
 Three.js loads from a CDN, so there's nothing to install.
 
-## Run it
+## Play online
+
+**https://abayax.github.io/navigation_home_control/**: works on any phone, tablet or computer. It's hosted on GitHub Pages from the `main` branch, so every push updates it within a few minutes.
+
+## Run it locally
 
 ```bash
 cd navigation_controls
