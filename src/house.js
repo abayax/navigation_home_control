@@ -7,6 +7,7 @@ const OPEN_PLAN_WIDTH = 2.5; // openings this wide or wider get no lintel
 const WINDOW_SILL = 0.9; // default window bottom (m above floor)
 const WINDOW_TOP = 2.1; // default window top
 const EXTERIOR_WALL = '#f3e6d3'; // outside of the house
+const WALL_TINT_WHITE = 0.45; // wall colour = room floor colour mixed with this much white
 const FENCE_H = 1.0;
 const FENCE_T = 0.08;
 const EPS = 0.001;
@@ -123,6 +124,13 @@ function floorTexture(pattern, color) {
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
   tex.anisotropy = 4;
   return { tex, metersPerTile };
+}
+
+// Mix a #rrggbb colour with white in screen (sRGB) space, so the result looks as expected
+function mixWithWhite(hex, t) {
+  const n = parseInt(hex.replace('#', ''), 16);
+  const ch = (shift) => Math.round(((n >> shift) & 255) + (255 - ((n >> shift) & 255)) * t);
+  return `#${((ch(16) << 16) | (ch(8) << 8) | ch(0)).toString(16).padStart(6, '0')}`;
 }
 
 // Wall paint: room colour with a white baseboard and a soft shade under the ceiling
@@ -314,7 +322,7 @@ export function buildHouse(data) {
   const sideMaterial = (x, z) => {
     const room = roomAt(data.rooms, x, z);
     if (!room || room.outdoor) return wallMaterial(data.exteriorWall ?? EXTERIOR_WALL);
-    return wallMaterial(room.wall ?? new THREE.Color(room.floor).lerp(new THREE.Color('#ffffff'), 0.72).getStyle());
+    return wallMaterial(room.wall ?? mixWithWhite(room.floor, WALL_TINT_WHITE));
   };
   // Materials for a box along a line: [+x, -x, +y, -y, +z, -z] faces
   const sideMats = (orient, c, mid) => orient === 'h'
