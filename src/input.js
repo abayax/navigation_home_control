@@ -1,16 +1,17 @@
 // Keyboard + touch input.
-//   ↑ / W        walk forward (hold)
+//   ↑ / W        walk forward (hold); double-tap and hold to run
 //   ↓ / S        walk backward (hold)
 //   ← / A        turn 90° left  (each tap; taps queue up)
 //   → / D        turn 90° right (each tap)
 //   Space        jump
-//   Shift        run
+//   Shift        run (also: double-tap forward)
 //   M            toggle map view
-// Touch: on-screen buttons for the same actions, plus swipe left/right to turn
+// Touch: on-screen buttons for the same actions (double-tap ▲ to run), plus swipe left/right to turn
 // and swipe up to jump.
 
 const SWIPE_MIN_PX = 50;
 const JUMP_BUFFER_MS = 150; // a jump pressed just before landing still counts
+const DOUBLE_TAP_MS = 300; // two forward presses this close together = run
 
 export class Input {
   constructor({ onToggleMap }) {
@@ -19,6 +20,8 @@ export class Input {
     this.touchBack = false;
     this.pendingTurns = 0; // +1 per left turn, -1 per right turn
     this.jumpAt = -Infinity; // time of the last jump press
+    this.lastForwardAt = -Infinity; // time of the last forward press
+    this.dash = false; // running because forward was double-tapped
     this.onToggleMap = onToggleMap;
 
     this.#bindKeyboard();
@@ -34,7 +37,14 @@ export class Input {
   }
 
   get run() {
-    return this.keys.has('ShiftLeft') || this.keys.has('ShiftRight');
+    return this.keys.has('ShiftLeft') || this.keys.has('ShiftRight') || (this.dash && this.move > 0);
+  }
+
+  /** Forward was pressed: a second press soon after the first starts running. */
+  #forwardPressed() {
+    const now = performance.now();
+    this.dash = now - this.lastForwardAt < DOUBLE_TAP_MS;
+    this.lastForwardAt = now;
   }
 
   /** Returns and clears the queued turns since the last call. */
@@ -70,6 +80,7 @@ export class Input {
       if (e.code === 'ArrowRight' || e.code === 'KeyD') this.pendingTurns -= 1;
       if (e.code === 'KeyM') this.onToggleMap();
       if (e.code === 'Space') this.jump();
+      if (e.code === 'ArrowUp' || e.code === 'KeyW') this.#forwardPressed();
     });
     addEventListener('keyup', (e) => this.keys.delete(e.code));
     addEventListener('blur', () => this.keys.clear());
@@ -93,7 +104,10 @@ export class Input {
       el.addEventListener('pointercancel', off);
       el.addEventListener('lostpointercapture', off);
     };
-    hold('btn-fwd', (v) => (this.touchFwd = v));
+    hold('btn-fwd', (v) => {
+      this.touchFwd = v;
+      if (v) this.#forwardPressed();
+    });
     hold('btn-back', (v) => (this.touchBack = v));
 
     const tap = (id, turns) => {

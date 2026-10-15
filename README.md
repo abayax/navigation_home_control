@@ -31,7 +31,7 @@ Options: `--layout office` opens straight into a layout, `--no-browser` just ser
 | Turn 90° left / right | ← / → (or A / D), one tap = 90° | ↰ / ↱ buttons, or swipe left / right |
 | Jump | Space | ⤒ button, or swipe up |
 | Get on / off the bike (stand next to it) | Space | ⤒ button |
-| Run | Shift | – |
+| Run | double-tap ↑ and hold (or hold Shift) | double-tap ▲ and hold |
 | Map view | M | 🗺️ button or tap the minimap |
 | Switch layout | 🏠 button | 🏠 button |
 
