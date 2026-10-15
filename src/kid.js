@@ -76,24 +76,35 @@ export function createKid(colors = {}) {
 
   let phase = 0;
   let swing = 0;
+  let air = 0; // 0 = on the ground, 1 = in the air
 
   return {
     group,
     // speed: signed m/s (negative = walking backwards)
-    update(dt, speed, x, z, yaw) {
-      group.position.set(x, 0, z);
+    // y: feet height, groundY: height of the surface below (for the blob shadow)
+    update(dt, speed, x, z, yaw, y = 0, groundY = 0) {
+      group.position.set(x, y, z);
       group.rotation.y = yaw;
 
       const moving = Math.abs(speed) > 0.01;
       swing += ((moving ? Math.min(0.8, 0.35 + Math.abs(speed) * 0.12) : 0) - swing) * Math.min(1, dt * 10);
       phase += dt * speed * 4.2;
 
-      const s = Math.sin(phase) * swing;
-      legL.rotation.x = s;
-      legR.rotation.x = -s;
-      armL.rotation.x = -s * 0.9;
-      armR.rotation.x = s * 0.9;
+      // Airborne pose: arms up, knees tucked
+      const height = y - groundY;
+      air += ((height > 0.05 ? 1 : 0) - air) * Math.min(1, dt * 12);
+
+      const s = Math.sin(phase) * swing * (1 - air);
+      legL.rotation.x = s + air * 0.5;
+      legR.rotation.x = -s - air * 0.3;
+      armL.rotation.x = -s * 0.9 - air * 2.6;
+      armR.rotation.x = s * 0.9 - air * 2.6;
+      armL.rotation.z = -air * 0.35;
+      armR.rotation.z = air * 0.35;
       body.position.y = moving ? Math.abs(Math.cos(phase)) * 0.04 * (swing / 0.8) : Math.sin(performance.now() / 600) * 0.005;
+
+      blob.position.y = groundY - y + 0.04;
+      blob.scale.setScalar(1 / (1 + height * 0.6));
     },
   };
 }

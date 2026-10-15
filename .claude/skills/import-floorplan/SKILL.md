@@ -66,6 +66,7 @@ Turn a floor plan image or PDF into `layouts/<id>/layout.json`, register it, and
 | whiteboard | [1.8, 0.05] | wall-mounted, no collision |
 | plant / toyBox | [0.5, 0.5] / [0.8, 0.5] | |
 | car / tree / slide | [1.9, 4.4] / [0.5, 0.5] / [0.8, 3.0] | |
+| suv | [1.92, 4.75] | white Tesla Model Y style, nose faces +z |
 | piano | [1.5, 0.6] | upright, keys face +z |
 | trampoline | [3.4, 3.4] | round, solid |
 | tree | [0.5, 0.5] | `kind: "pine"` for evergreens, `fruit: "#hex"` for fruit trees |
@@ -73,6 +74,8 @@ Turn a floor plan image or PDF into `layouts/<id>/layout.json`, register it, and
 | mat | walk-over | flat rectangle, `size` + `color`: exercise mat, gravel, lawn or concrete patch |
 | flowers | walk-over | flower bed, `size` |
 | box | [1, 1] | anything else: set `size`, `height`, `color` |
+
+Each type has a standing height (`TOPS` in `src/furniture.js`). Items under ~1 m can be jumped onto. If you add a new type, add its top there too.
 
 Keep footprints at least 0.1 m inside the room edge, so they don't poke into the 0.15 m walls, and don't block doors.
 

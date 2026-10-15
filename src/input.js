@@ -3,11 +3,14 @@
 //   ↓ / S        walk backward (hold)
 //   ← / A        turn 90° left  (each tap; taps queue up)
 //   → / D        turn 90° right (each tap)
+//   Space        jump
 //   Shift        run
 //   M            toggle map view
-// Touch: on-screen buttons for the same actions, plus swipe left/right to turn.
+// Touch: on-screen buttons for the same actions, plus swipe left/right to turn
+// and swipe up to jump.
 
 const SWIPE_MIN_PX = 50;
+const JUMP_BUFFER_MS = 150; // a jump pressed just before landing still counts
 
 export class Input {
   constructor({ onToggleMap }) {
@@ -15,6 +18,7 @@ export class Input {
     this.touchFwd = false;
     this.touchBack = false;
     this.pendingTurns = 0; // +1 per left turn, -1 per right turn
+    this.jumpAt = -Infinity; // time of the last jump press
     this.onToggleMap = onToggleMap;
 
     this.#bindKeyboard();
@@ -40,6 +44,22 @@ export class Input {
     return t;
   }
 
+  /** True if jump was pressed recently; clears it. */
+  consumeJump() {
+    if (performance.now() - this.jumpAt > JUMP_BUFFER_MS) return false;
+    this.jumpAt = -Infinity;
+    return true;
+  }
+
+  /** True if jump was pressed recently, without clearing it. */
+  get jumpQueued() {
+    return performance.now() - this.jumpAt <= JUMP_BUFFER_MS;
+  }
+
+  jump() {
+    this.jumpAt = performance.now();
+  }
+
   #bindKeyboard() {
     const handled = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'];
     addEventListener('keydown', (e) => {
@@ -49,6 +69,7 @@ export class Input {
       if (e.code === 'ArrowLeft' || e.code === 'KeyA') this.pendingTurns += 1;
       if (e.code === 'ArrowRight' || e.code === 'KeyD') this.pendingTurns -= 1;
       if (e.code === 'KeyM') this.onToggleMap();
+      if (e.code === 'Space') this.jump();
     });
     addEventListener('keyup', (e) => this.keys.delete(e.code));
     addEventListener('blur', () => this.keys.clear());
@@ -86,6 +107,13 @@ export class Input {
     };
     tap('btn-left', 1);
     tap('btn-right', -1);
+    const jumpBtn = document.getElementById('btn-jump');
+    jumpBtn.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      this.jump();
+      jumpBtn.classList.add('pressed');
+      setTimeout(() => jumpBtn.classList.remove('pressed'), 120);
+    });
 
     // Show touch UI on touch devices
     if (matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window) {
@@ -100,7 +128,8 @@ export class Input {
   }
 
   #bindSwipe() {
-    // Swipe on the 3D view (not on buttons): swipe left = turn left, swipe right = turn right
+    // Swipe on the 3D view (not on buttons): swipe left = turn left, swipe right = turn right,
+    // swipe up = jump
     const starts = new Map();
     const canvasHost = document.getElementById('app');
     canvasHost.addEventListener('pointerdown', (e) => {
@@ -114,6 +143,8 @@ export class Input {
       const dy = e.clientY - s.y;
       if (Math.abs(dx) > SWIPE_MIN_PX && Math.abs(dx) > Math.abs(dy) * 1.5) {
         this.pendingTurns += dx < 0 ? 1 : -1;
+      } else if (-dy > SWIPE_MIN_PX && -dy > Math.abs(dx) * 1.5) {
+        this.jump();
       }
     };
     canvasHost.addEventListener('pointerup', end);

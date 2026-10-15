@@ -1,7 +1,10 @@
 // 2D collision in the floor plane (x, z). Walls are thick line segments,
 // furniture is axis-aligned boxes, the player is a circle.
+// Walls and fences always block. Furniture has a `top` height: it only blocks
+// while the player's feet (p.y) are below that top, so you can jump onto it.
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+const STEP = 0.05; // feet this close to a top count as standing on it
 
 export function resolveCollisions(p, { segments, boxes }) {
   for (let iter = 0; iter < 3; iter++) {
@@ -12,6 +15,7 @@ export function resolveCollisions(p, { segments, boxes }) {
       pushOut(p, cx, cz, p.radius + s.r, -dz, dx);
     }
     for (const b of boxes) {
+      if ((p.y ?? 0) >= b.top - STEP) continue; // above it: no sideways bump
       const cx = clamp(p.x, b.minX, b.maxX);
       const cz = clamp(p.z, b.minZ, b.maxZ);
       if (cx === p.x && cz === p.z) {
@@ -59,4 +63,21 @@ export function cameraDistance(px, pz, dx, dz, maxDist, walls, margin = 0.3) {
     if (t > 0 && u >= 0 && u <= 1) best = Math.min(best, t - margin - s.r);
   }
   return Math.max(0.35, best);
+}
+
+/**
+ * Height of the surface under (x, z): the highest furniture top the player's
+ * centre is over, ignoring tops above `maxTop` (things you're not up on yet).
+ * Returns { height, box } (box is null for the floor).
+ */
+export function supportAt(boxes, x, z, maxTop) {
+  let height = 0, box = null;
+  for (const b of boxes) {
+    if (b.top > maxTop || b.top <= height) continue;
+    if (x >= b.minX && x <= b.maxX && z >= b.minZ && z <= b.maxZ) {
+      height = b.top;
+      box = b;
+    }
+  }
+  return { height, box };
 }

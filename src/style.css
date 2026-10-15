@@ -200,8 +200,21 @@ body.touch #hint {
 
 .pad.right {
   right: calc(20px + env(safe-area-inset-right));
-  flex-direction: row;
-  align-items: flex-end;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pad .row {
+  display: flex;
+  gap: 14px;
+}
+
+.tbtn.jump {
+  background: rgba(255, 216, 77, 0.9);
+}
+
+.tbtn.jump.pressed {
+  background: #ffb703;
 }
 
 .tbtn {

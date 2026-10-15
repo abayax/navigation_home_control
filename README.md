@@ -28,9 +28,12 @@ Options: `--layout office` opens straight into a layout, `--no-browser` just ser
 |---|---|---|
 | Walk forward / back | ↑ / ↓ (or W / S), hold | ▲ / ▼ buttons, hold |
 | Turn 90° left / right | ← / → (or A / D), one tap = 90° | ↰ / ↱ buttons, or swipe left / right |
+| Jump | Space | ⤒ button, or swipe up |
 | Run | Shift | – |
 | Map view | M | 🗺️ button or tap the minimap |
 | Switch layout | 🏠 button | 🏠 button |
+
+Jumping: the kid jumps about 1 m and can land on beds, couches, chairs, tables, desks, counters and benches. Walk off the edge to get down. Taller things (fridge, bookshelves, TV, cars, trees) are out of reach, and walls and fences always block. The trampoline keeps bouncing; jump while bouncing to go much higher.
 
 ## Files
 
@@ -47,6 +50,7 @@ Options: `--layout office` opens straight into a layout, `--no-browser` just ser
 | `src/kid.js` | The character and its walking animation |
 | `src/input.js` | Keyboard, touch buttons, swipes |
 | `src/collision.js` | Solid walls and furniture, keeps the camera inside rooms |
+| `src/physics.js` | Jumping, gravity, landing on furniture, trampoline bounces |
 | `src/hud.js` | Room-name badge and minimap |
 
 ## Layouts

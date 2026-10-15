@@ -197,6 +197,9 @@ for i, fruit in enumerate(['#f9c74f', '#ffadad']):              # loquat, peach
     y = 454 + (i + 0.5) * (837 - 454) / 2
     oadd(YARD, 'tree', (120, y, 120, y), [0.5, 0.5], fruit=fruit)
 oadd(FRONT, 'flowers', (745,1124,868,1502))
+# White Tesla Model Y parked nose-in on the driveway, a little left of the garage door centre
+DRIVE = (X_K * FT, Y_GB * FT, X_E * FT, Y_FY * FT)
+place(DRIVE, 'suv', X_K * FT + 2.2, Y_GB * FT + 0.6 + 4.75 / 2, [1.92, 4.75], 180)
 
 # ---------- overlap check between solid furniture ----------
 for i in range(len(boxes)):

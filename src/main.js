@@ -3,6 +3,7 @@ import { buildHouse } from './house.js';
 import { createKid } from './kid.js';
 import { Input } from './input.js';
 import { resolveCollisions, cameraDistance } from './collision.js';
+import { stepVertical } from './physics.js';
 import { Hud } from './hud.js';
 import { loadLayout, setupLayoutPicker } from './layouts.js';
 
@@ -53,6 +54,11 @@ const player = {
   yaw: spawnYaw,
   targetYaw: spawnYaw,
   radius: 0.25,
+  y: 0, // feet height
+  vy: 0,
+  grounded: true,
+  support: null, // furniture box we're standing on (null = floor)
+  boost: false, // jump pressed while bouncing on a trampoline
 };
 
 let mapMode = false;
@@ -65,6 +71,7 @@ const hud = new Hud(data, house, { onToggleMap: toggleMap });
 // ---------- camera ----------
 let camYaw = player.yaw;
 let camDist = CAM_DIST;
+let camY = 0; // smoothed player height, so bouncing doesn't shake the camera
 const followPos = new THREE.Vector3();
 const followTarget = new THREE.Vector3();
 const mapPos = new THREE.Vector3();
@@ -90,8 +97,9 @@ function updateCamera(dt) {
   const allowed = cameraDistance(player.x, player.z, bx, bz, CAM_DIST, house.walls);
   camDist = allowed < camDist ? allowed : Math.min(allowed, camDist + dt * 3);
 
-  followPos.set(player.x + bx * camDist, CAM_HEIGHT, player.z + bz * camDist);
-  followTarget.set(player.x - bx * 1.2, 0.9, player.z - bz * 1.2);
+  camY += (player.y - camY) * (1 - Math.exp(-4 * dt));
+  followPos.set(player.x + bx * camDist, CAM_HEIGHT + camY, player.z + bz * camDist);
+  followTarget.set(player.x - bx * 1.2, 0.9 + camY, player.z - bz * 1.2);
 
   mapT += ((mapMode ? 1 : 0) - mapT) * (1 - Math.exp(-5 * dt));
   mapCamera();
@@ -119,7 +127,9 @@ function update(dt) {
   player.z += Math.cos(player.yaw) * speed * dt;
   resolveCollisions(player, house.colliders);
 
-  kid.update(dt, speed, player.x, player.z, player.yaw);
+  const groundY = stepVertical(player, house.colliders.boxes, dt, () => input.consumeJump());
+
+  kid.update(dt, player.grounded ? speed : 0, player.x, player.z, player.yaw, player.y, groundY);
   updateCamera(dt);
   hud.update(player.x, player.z, player.yaw);
 }

@@ -347,7 +347,7 @@ export function buildHouse(data) {
     if (f.size) {
       const swap = Math.abs(Math.sin(rot)) > 0.5;
       const [w, d] = swap ? [f.size[1], f.size[0]] : f.size;
-      boxes.push({ minX: x - w / 2, maxX: x + w / 2, minZ: z - d / 2, maxZ: z + d / 2 });
+      boxes.push({ minX: x - w / 2, maxX: x + w / 2, minZ: z - d / 2, maxZ: z + d / 2, top: f.top, bouncy: f.bouncy });
     }
   }
 

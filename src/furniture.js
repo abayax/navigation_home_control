@@ -145,6 +145,33 @@ const builders = {
     return [1.9, 4.4];
   },
 
+  // White crossover SUV, roughly a Tesla Model Y (4.75 x 1.92 x 1.62 m). Nose faces +z.
+  suv({ color = '#f8f9fa' }, g) {
+    const glass = '#1b1f24';
+    box(g, 1.92, 0.62, 4.75, color, 0, 0.51, 0); // body
+    box(g, 1.72, 0.6, 2.5, glass, 0, 1.12, -0.25); // glass greenhouse + panoramic roof
+    const windshield = box(g, 1.72, 0.05, Math.hypot(0.75, 0.6), glass, 0, 1.12, 1.375);
+    windshield.rotation.x = Math.atan2(0.6, 0.75);
+    const rear = box(g, 1.72, 0.05, Math.hypot(0.5, 0.52), glass, 0, 1.16, -1.75);
+    rear.rotation.x = -Math.atan2(0.52, 0.5);
+    box(g, 1.92, 0.08, 1.2, color, 0, 0.84, 1.75); // hood
+    box(g, 1.92, 0.1, 0.4, color, 0, 0.87, -2.18); // tailgate lip
+    for (const sx of [-1, 1]) {
+      box(g, 0.16, 0.1, 0.2, color, sx * 1.0, 0.98, 0.9); // mirrors
+      box(g, 0.32, 0.05, 0.03, '#ffffff', sx * 0.62, 0.74, 2.38); // headlights
+      for (const sz of [-1, 1]) {
+        const tire = cyl(g, 0.36, 0.36, 0.26, '#222222', sx * 0.86, 0.36, sz * 1.45, 24);
+        tire.rotation.z = Math.PI / 2;
+        const rim = cyl(g, 0.23, 0.23, 0.27, '#9aa0a6', sx * 0.86, 0.36, sz * 1.45, 16);
+        rim.rotation.z = Math.PI / 2;
+      }
+    }
+    box(g, 1.6, 0.05, 0.03, '#e63946', 0, 0.86, -2.39); // tail light bar
+    box(g, 0.13, 0.025, 0.02, '#adb5bd', 0, 0.86, 2.385); // "T" logo
+    box(g, 0.025, 0.1, 0.02, '#adb5bd', 0, 0.81, 2.385);
+    return [1.92, 4.75];
+  },
+
   tree({ kind = 'round', fruit }, g) {
     cyl(g, 0.15, 0.2, 1.6, '#8d5a3b', 0, 0.8, 0);
     if (kind === 'pine') {
@@ -271,6 +298,18 @@ const builders = {
   },
 };
 
+// Height you stand at on top of each item (m). Items taller than a jump
+// (~1.05 m) can't be climbed. Bouncy items launch you back up.
+const TOPS = {
+  bed: 0.57, sofa: 0.47, coffeeTable: 0.43, toyBox: 0.51, plant: 1.0, desk: 0.745,
+  counter: 0.92, fridge: 1.8, tub: 0.55, toilet: 0.445, sink: 0.855, tv: 1.25,
+  car: 1.42, suv: 1.62, tree: 4, slide: 1.6, table: 0.765, chair: 0.5, piano: 1.25,
+  trampoline: 0.92,
+  box: (item) => item.height ?? 1,
+  bookshelf: (item) => item.height ?? 1.8,
+};
+const BOUNCY = new Set(['trampoline']);
+
 export function buildFurniture(item) {
   const builder = builders[item.type];
   if (!builder) {
@@ -279,5 +318,6 @@ export function buildFurniture(item) {
   }
   const object = new THREE.Group();
   const size = builder(item, object);
-  return { object, size };
+  const top = typeof TOPS[item.type] === 'function' ? TOPS[item.type](item) : TOPS[item.type] ?? 1;
+  return { object, size, top, bouncy: BOUNCY.has(item.type) };
 }
