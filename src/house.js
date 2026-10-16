@@ -136,7 +136,8 @@ function floorTexture(pattern, color) {
 }
 
 // A flat ribbon following a smooth (Catmull-Rom) curve through path.points
-function pathRibbon({ points, width = 2, color = '#efe9dc', closed = false }) {
+function pathRibbon({ points, width = 2, color = '#efe9dc', closed = false }, layer = 0) {
+  const y = 0.025 + layer * 0.003;
   const pts = points.map(([x, z]) => ({ x, z }));
   const n = pts.length;
   const at = (i) => (closed ? pts[(i + n) % n] : pts[Math.max(0, Math.min(n - 1, i))]);
@@ -159,7 +160,7 @@ function pathRibbon({ points, width = 2, color = '#efe9dc', closed = false }) {
     const len = Math.hypot(tx, tz) || 1;
     tx /= len; tz /= len;
     const nx = -tz * (width / 2), nz = tx * (width / 2);
-    pos.push(p.x + nx, 0.027, p.z + nz, p.x - nx, 0.027, p.z - nz);
+    pos.push(p.x + nx, y, p.z + nz, p.x - nx, y, p.z - nz);
     if (i > 0) {
       const v = i * 2;
       idx.push(v - 2, v, v - 1, v - 1, v, v + 1); // counter-clockwise seen from above = faces up
@@ -169,7 +170,7 @@ function pathRibbon({ points, width = 2, color = '#efe9dc', closed = false }) {
   geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
   geo.setAttribute('normal', new THREE.Float32BufferAttribute(pos.map((_, k) => (k % 3 === 1 ? 1 : 0)), 3));
   geo.setIndex(idx);
-  const material = new THREE.MeshLambertMaterial({ color, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
+  const material = new THREE.MeshLambertMaterial({ color, polygonOffset: true, polygonOffsetFactor: -1 - layer, polygonOffsetUnits: -4 * (layer + 1) });
   const mesh = new THREE.Mesh(geo, material);
   mesh.receiveShadow = true;
   return mesh;
@@ -486,7 +487,8 @@ export function buildHouse(data) {
   }
 
   // Paths: smooth flat ribbons through points (walk over them)
-  for (const path of data.paths ?? []) group.add(pathRibbon(path));
+  // Each path gets its own layer so crossing paths never fight over the same spot (flicker)
+  (data.paths ?? []).forEach((path, layer) => group.add(pathRibbon(path, layer)));
 
   // Bounds of everything (for the map camera + minimap)
   const bounds = { minX: Infinity, maxX: -Infinity, minZ: Infinity, maxZ: -Infinity };

@@ -209,7 +209,7 @@ export class Npc {
       ['slide', 0.3, h.slides.filter((sl) => !sl.rider)],
       ['swing', 0.25, h.swings.filter((sw) => !sw.rider)],
       ['climb', isKid ? 0.2 : 0.05, climbs],
-      ['spin', 0.15, h.spinners],
+      ['spin', 0.15, h.spinners.filter((sp) => (sp.riders ?? 0) < 3)], // room for three inside
       ['hang', 0.1, free.filter((c) => c.spinner)], // hang on the outside of a spinner
     ].filter(([, , list]) => list.length);
     for (let tries = 0; tries < 4 && kinds.length; tries++) {
@@ -308,6 +308,8 @@ export class Npc {
     const inner = { x: sp.x + Math.sin(a) * r * 0.45, z: sp.z + Math.cos(a) * r * 0.45, y: 0.28 };
     return {
       approach,
+      reserve: () => (sp.riders = (sp.riders ?? 0) + 1),
+      onEnd: () => (sp.riders = Math.max(0, (sp.riders ?? 1) - 1)),
       script: [
         { kind: 'move', from: { ...approach, y: 0 }, to: inner, dur: 0.6, pose: 'stand' },
         { kind: 'spin', sp, r: r * 0.45, y: 0.28, pose: 'stand', dur: rand(6, 12), angle: a },

@@ -48,7 +48,7 @@ Bike: the green bike starts in the garage. Stand next to it and jump to ride (fa
 
 ## Family and friends (NPCs)
 
-Mom and Dad appear at home and in the playground; three other kids (Lily, Max, Noah) only in the playground. Which layouts each one appears in is the `layouts` list in `npcs/npcs.json`; `kind` is `adult` or `kid`. The kids mostly play (slides, swings, climbing, the spinner) and run around; grown-ups mostly sit and watch but sometimes play too. The kids' phrases are in `npcs/kids.txt`.
+Mom and Dad appear at home and in the playground; eight other kids (Lily, Max, Noah, Ava, Ethan, Zoe, Kai, Mila) only in the playground. Which layouts each one appears in is the `layouts` list in `npcs/npcs.json`; `kind` is `adult` or `kid`. The kids mostly play (slides, swings, climbing, the spinner) and run around; grown-ups mostly sit and watch but sometimes play too. The kids' phrases are in `npcs/kids.txt`.
 
 ### Mom and Dad
 

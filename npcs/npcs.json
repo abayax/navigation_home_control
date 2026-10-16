@@ -4,53 +4,193 @@
       "id": "mom",
       "name": "Mom",
       "kind": "adult",
-      "layouts": ["home", "jollyman-park"],
+      "layouts": [
+        "home",
+        "jollyman-park"
+      ],
       "phrases": "mom.txt",
       "scale": 1.3,
       "hair": "long",
-      "colors": { "skin": "#f5c9a8", "hair": "#3b2417", "shirt": "#e56b9f", "pants": "#5a4fcf", "shoes": "#ffffff" }
+      "colors": {
+        "skin": "#f5c9a8",
+        "hair": "#3b2417",
+        "shirt": "#e56b9f",
+        "pants": "#5a4fcf",
+        "shoes": "#ffffff"
+      }
     },
     {
       "id": "dad",
       "name": "Dad",
       "kind": "adult",
-      "layouts": ["home", "jollyman-park"],
+      "layouts": [
+        "home",
+        "jollyman-park"
+      ],
       "phrases": "dad.txt",
       "scale": 1.38,
       "hair": "short",
       "glasses": true,
-      "colors": { "skin": "#f1c27d", "hair": "#2b1d14", "shirt": "#3a86ff", "pants": "#495057", "shoes": "#333333" }
+      "colors": {
+        "skin": "#f1c27d",
+        "hair": "#2b1d14",
+        "shirt": "#3a86ff",
+        "pants": "#495057",
+        "shoes": "#333333"
+      }
     },
     {
       "id": "lily",
       "name": "Lily",
       "kind": "kid",
-      "layouts": ["jollyman-park"],
+      "layouts": [
+        "jollyman-park"
+      ],
       "phrases": "kids.txt",
       "scale": 0.95,
       "hair": "ponytail",
       "dress": true,
-      "colors": { "skin": "#f1c27d", "hair": "#4a2c1a", "shirt": "#9b5de5", "pants": "#f1c27d", "shoes": "#ff4d94", "tie": "#ffd60a" }
+      "colors": {
+        "skin": "#f1c27d",
+        "hair": "#4a2c1a",
+        "shirt": "#9b5de5",
+        "pants": "#f1c27d",
+        "shoes": "#ff4d94",
+        "tie": "#ffd60a"
+      }
     },
     {
       "id": "max",
       "name": "Max",
       "kind": "kid",
-      "layouts": ["jollyman-park"],
+      "layouts": [
+        "jollyman-park"
+      ],
       "phrases": "kids.txt",
       "scale": 1.02,
       "hair": "cap",
-      "colors": { "skin": "#8d5524", "hair": "#1a1a1a", "shirt": "#06d6a0", "pants": "#3a86ff", "shoes": "#ffffff", "cap": "#ef476f" }
+      "colors": {
+        "skin": "#8d5524",
+        "hair": "#1a1a1a",
+        "shirt": "#06d6a0",
+        "pants": "#3a86ff",
+        "shoes": "#ffffff",
+        "cap": "#ef476f"
+      }
     },
     {
       "id": "noah",
       "name": "Noah",
       "kind": "kid",
-      "layouts": ["jollyman-park"],
+      "layouts": [
+        "jollyman-park"
+      ],
       "phrases": "kids.txt",
       "scale": 0.9,
       "hair": "short",
-      "colors": { "skin": "#ffdbac", "hair": "#d4a017", "shirt": "#ffbe0b", "pants": "#495057", "shoes": "#222222" }
+      "colors": {
+        "skin": "#ffdbac",
+        "hair": "#d4a017",
+        "shirt": "#ffbe0b",
+        "pants": "#495057",
+        "shoes": "#222222"
+      }
+    },
+    {
+      "id": "ava",
+      "name": "Ava",
+      "kind": "kid",
+      "layouts": [
+        "jollyman-park"
+      ],
+      "phrases": "kids.txt",
+      "scale": 0.92,
+      "hair": "long",
+      "dress": true,
+      "colors": {
+        "skin": "#ffdbac",
+        "hair": "#e0a96d",
+        "shirt": "#ff6b6b",
+        "pants": "#ffdbac",
+        "shoes": "#ffffff"
+      }
+    },
+    {
+      "id": "ethan",
+      "name": "Ethan",
+      "kind": "kid",
+      "layouts": [
+        "jollyman-park"
+      ],
+      "phrases": "kids.txt",
+      "scale": 1.05,
+      "hair": "short",
+      "glasses": true,
+      "colors": {
+        "skin": "#c68642",
+        "hair": "#2b1d14",
+        "shirt": "#4361ee",
+        "pants": "#6c757d",
+        "shoes": "#ff9f1c"
+      }
+    },
+    {
+      "id": "zoe",
+      "name": "Zoe",
+      "kind": "kid",
+      "layouts": [
+        "jollyman-park"
+      ],
+      "phrases": "kids.txt",
+      "scale": 0.88,
+      "hair": "ponytail",
+      "dress": true,
+      "colors": {
+        "skin": "#8d5524",
+        "hair": "#1a1a1a",
+        "shirt": "#ffd166",
+        "pants": "#8d5524",
+        "shoes": "#06d6a0",
+        "tie": "#ef476f"
+      }
+    },
+    {
+      "id": "kai",
+      "name": "Kai",
+      "kind": "kid",
+      "layouts": [
+        "jollyman-park"
+      ],
+      "phrases": "kids.txt",
+      "scale": 0.97,
+      "hair": "cap",
+      "colors": {
+        "skin": "#f1c27d",
+        "hair": "#1a1a1a",
+        "shirt": "#e76f51",
+        "pants": "#264653",
+        "shoes": "#ffffff",
+        "cap": "#2a9d8f"
+      }
+    },
+    {
+      "id": "mila",
+      "name": "Mila",
+      "kind": "kid",
+      "layouts": [
+        "jollyman-park"
+      ],
+      "phrases": "kids.txt",
+      "scale": 0.93,
+      "hair": "ponytail",
+      "colors": {
+        "skin": "#ffe0bd",
+        "hair": "#7b3f00",
+        "shirt": "#90be6d",
+        "pants": "#577590",
+        "shoes": "#f72585",
+        "tie": "#90be6d"
+      }
     }
   ]
 }
