@@ -1,4 +1,5 @@
 import { roomAt } from './house.js';
+import { terrainHeight } from './collision.js';
 
 // Walkable grid over the whole layout + A* path finding, for NPCs.
 // A cell is walkable if it is inside a room and an NPC of `radius` standing
@@ -189,6 +190,11 @@ function clear(x, z, r, segments, boxes) {
     if (Math.hypot(x - (s.ax + dx * t), z - (s.az + dz * t)) < r + s.r) return false;
   }
   for (const b of boxes) {
+    if (b.terrain) {
+      // NPCs stay off hills and steps
+      if (x >= b.minX && x <= b.maxX && z >= b.minZ && z <= b.maxZ && terrainHeight(b, x, z) > 0.05) return false;
+      continue;
+    }
     const cx = Math.max(b.minX, Math.min(b.maxX, x)), cz = Math.max(b.minZ, Math.min(b.maxZ, z));
     if (Math.hypot(x - cx, z - cz) < r) return false;
   }

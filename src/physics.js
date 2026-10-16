@@ -1,4 +1,4 @@
-import { supportAt } from './collision.js';
+import { supportAt, STEP_UP } from './collision.js';
 
 // Vertical movement: jumping, gravity, landing on furniture, trampoline bounces.
 
@@ -20,10 +20,13 @@ export function stepVertical(player, boxes, dt, takeJump) {
   }
 
   const prevY = player.y;
+  const wasGrounded = player.grounded;
   player.vy -= GRAVITY * dt;
   player.y += player.vy * dt;
 
-  const below = supportAt(boxes, player.x, player.z, prevY + 0.05);
+  const below = supportAt(boxes, player.x, player.z, prevY + STEP_UP);
+  // Walking down a slope or off a tiny ledge: stay on the ground instead of hopping
+  if (wasGrounded && player.vy <= 0 && below.height < player.y && prevY - below.height < 0.12) player.y = below.height;
   if (player.y <= below.height) {
     const impact = -player.vy;
     player.y = below.height;

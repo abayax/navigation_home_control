@@ -211,6 +211,7 @@ export function buildHouse(data) {
   const boxes = []; // furniture AABBs { minX, maxX, minZ, maxZ }
   const bikes = []; // rideable bikes { object, box, x, z, yaw }
   const items = []; // every furniture item's overall footprint { minX.., rot, item, top }
+  const spinners = []; // things that turn while you stand on them { object, box, x, z }
 
   // Ground
   const ground = new THREE.Mesh(
@@ -432,10 +433,28 @@ export function buildHouse(data) {
     };
     const footprint = { ...aabb(0, 0, f.size[0], f.size[1]), top: f.top, item, rot, size: f.size };
     items.push(footprint);
+    if (f.terrain) {
+      // shaped ground (hills, big steps): sample its height function on a world grid
+      const cell = 0.1;
+      const t = { x0: footprint.minX, z0: footprint.minZ, cell };
+      t.nx = Math.ceil((footprint.maxX - footprint.minX) / cell) + 1;
+      t.nz = Math.ceil((footprint.maxZ - footprint.minZ) / cell) + 1;
+      t.data = new Float32Array(t.nx * t.nz);
+      for (let j = 0; j < t.nz; j++)
+        for (let i = 0; i < t.nx; i++) {
+          const dx = t.x0 + i * cell - x, dz = t.z0 + j * cell - z;
+          t.data[j * t.nx + i] = f.terrain(dx * c - dz * sn, dx * sn + dz * c); // world -> item-local
+        }
+      boxes.push({ ...aabb(0, 0, f.size[0], f.size[1]), top: Math.max(...t.data), terrain: t, part: item.type });
+    }
     if (f.colliders) {
       // several solid parts (e.g. a playhouse deck and its walls)
-      for (const col of f.colliders) boxes.push({ ...aabb(col.x, col.z, col.w, col.d), top: col.top, part: item.type });
-    } else {
+      for (const col of f.colliders) {
+        const box = { ...aabb(col.x, col.z, col.w, col.d), top: col.top, part: item.type };
+        boxes.push(box);
+        if (col.spin) spinners.push({ object: f.object, box, x, z }); // stand on it and it turns
+      }
+    } else if (!f.terrain) {
       const box = { ...footprint, bouncy: f.bouncy };
       boxes.push(box);
       if (item.type === 'bike') bikes.push({ object: f.object, box, x, z, yaw: rot });
@@ -461,6 +480,7 @@ export function buildHouse(data) {
     windows: windowSegs,
     bikes,
     items,
+    spinners,
     bounds,
     colliders: { segments: [...walls, ...fences], boxes },
   };

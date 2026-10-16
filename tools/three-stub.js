@@ -21,8 +21,9 @@ export class Sprite extends Object3D {}
 
 class Geometry {
   constructor() {
-    this.attributes = { uv: { count: 0, getX: () => 0, getY: () => 0, setXY() {} }, position: { count: 0, getX: () => 0, getY: () => 0 } };
+    this.attributes = { uv: { count: 0, getX: () => 0, getY: () => 0, setXY() {} }, position: { count: 0, getX: () => 0, getY: () => 0, getZ: () => 0, setY() {} } };
   }
+  computeVertexNormals() {}
   rotateX() {
     return this;
   }

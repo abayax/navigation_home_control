@@ -3,7 +3,7 @@ import { buildHouse, roomAt } from './house.js';
 import { createKid, HIP_HEIGHT } from './person.js';
 import { BIKE_SEAT, TREE_PERCH } from './furniture.js';
 import { Input } from './input.js';
-import { resolveCollisions, cameraDistance, lineBlocked } from './collision.js';
+import { resolveCollisions, cameraDistance, lineBlocked, terrainBlocks, terrainHeightAt, terrainSlope } from './collision.js';
 import { stepVertical } from './physics.js';
 import { Hud } from './hud.js';
 import { loadLayout, setupLayoutPicker } from './layouts.js';
@@ -25,6 +25,9 @@ const BIKE_RADIUS = 0.3;
 const MOUNT_DISTANCE = 1.1; // how close to a bike you must be to hop on
 const TREE_DISTANCE = 1.0; // how close to a trunk you must be to climb
 const CLIMB_TIME = 0.9; // seconds to climb up or down
+const SLIDE_MAX = 3.2; // m/s sliding down a grass slope
+const SLIDE_DELAY = 0.25; // stand still this long on a slope before sliding
+const SPIN_MAX = 1.6; // rad/s for a spinner you stand on
 const FACING = { north: Math.PI, south: 0, east: Math.PI / 2, west: -Math.PI / 2 };
 
 const { layouts, current, data } = await loadLayout();
@@ -88,6 +91,7 @@ const player = {
   boost: false, // jump pressed while bouncing on a trampoline
 };
 
+let slideSpeed = 0, stillOnSlope = 0;
 let bodyYaw = player.yaw; // which way the kid's body faces (turns toward the camera when walking back)
 let faceBack = false;
 
@@ -334,6 +338,46 @@ function update(dt) {
   player.z += Math.cos(player.yaw) * speed * dt;
   for (const npc of npcs) npc.pushAway(player);
   resolveCollisions(player, house.colliders);
+  // Shaped ground: no walking up hillsides that are too steep or steps that are too
+  // high (jump instead); bikes stay off hills altogether
+  if (riding ? terrainHeightAt(boxes, player.x, player.z) > 0.05 : terrainBlocks(boxes, prevX, prevZ, player.x, player.z, player.y)) {
+    player.x = prevX;
+    player.z = prevZ;
+  }
+
+  // Grass slopes: stand still on one for a moment and you slide down, sitting
+  let sliding = false;
+  const slope = !riding && player.grounded && move === 0 && player.support?.terrain ? terrainSlope(boxes, player.x, player.z) : null;
+  const steep = slope ? Math.hypot(slope.gx, slope.gz) : 0;
+  if (steep > 0.2 && steep < 1.0 && (stillOnSlope += dt) > SLIDE_DELAY) {
+    slideSpeed = Math.min(SLIDE_MAX, slideSpeed + 5 * dt);
+    player.x -= (slope.gx / steep) * slideSpeed * dt;
+    player.z -= (slope.gz / steep) * slideSpeed * dt;
+    resolveCollisions(player, house.colliders);
+    bodyYaw = Math.atan2(-slope.gx, -slope.gz);
+    sliding = true;
+  } else {
+    slideSpeed = 0;
+    if (!(steep > 0.2 && steep < 1.0)) stillOnSlope = 0;
+  }
+
+  // Spinners turn while you stand on them (and slow down after you hop off)
+  for (const sp of house.spinners) {
+    const onIt = player.grounded && player.support === sp.box;
+    sp.speed = onIt ? Math.min(SPIN_MAX, (sp.speed ?? 0) + 1.2 * dt) : Math.max(0, (sp.speed ?? 0) - 0.6 * dt);
+    if (!sp.speed) continue;
+    const a = sp.speed * dt;
+    sp.object.rotation.y += a;
+    if (onIt) {
+      const dx = player.x - sp.x, dz = player.z - sp.z;
+      player.x = sp.x + dx * Math.cos(a) + dz * Math.sin(a);
+      player.z = sp.z - dx * Math.sin(a) + dz * Math.cos(a);
+      player.yaw += a;
+      player.targetYaw += a;
+      bodyYaw += a;
+    }
+  }
+
   if (riding) {
     // Keep the bike out of the house: check where we are and just ahead of the front wheel
     const dir = speed < 0 ? -1 : 1;
@@ -350,8 +394,10 @@ function update(dt) {
   if (riding || mapControls) faceBack = false;
   else if (move < 0) faceBack = true;
   else if (move > 0) faceBack = false;
-  const targetBody = player.yaw + (faceBack ? Math.PI : 0);
-  bodyYaw += Math.atan2(Math.sin(targetBody - bodyYaw), Math.cos(targetBody - bodyYaw)) * Math.min(1, dt * 10);
+  if (!sliding) {
+    const targetBody = player.yaw + (faceBack ? Math.PI : 0);
+    bodyYaw += Math.atan2(Math.sin(targetBody - bodyYaw), Math.cos(targetBody - bodyYaw)) * Math.min(1, dt * 10);
+  }
 
   if (riding) {
     const fx = Math.sin(player.yaw), fz = Math.cos(player.yaw);
@@ -365,7 +411,8 @@ function update(dt) {
     const groundY = stepVertical(player, boxes, dt, () => input.consumeJump());
     let animSpeed = player.grounded ? (faceBack ? Math.abs(speed) : speed) : 0;
     if (Math.abs(animSpeed) > RUN_ANIM_SPEED) animSpeed = Math.sign(animSpeed) * RUN_ANIM_SPEED;
-    kid.update(dt, animSpeed, player.x, player.z, bodyYaw, player.y, groundY);
+    if (sliding) kid.update(dt, 0, player.x, player.z, bodyYaw, groundY + 0.08 - HIP_HEIGHT, groundY + 0.08 - HIP_HEIGHT, 1);
+    else kid.update(dt, animSpeed, player.x, player.z, bodyYaw, player.y, groundY);
     const onGround = player.grounded && player.y < 0.05;
     showPrompt(onGround && nearestBike() ? `🚲 ${jumpKey} to ride` : onGround && nearestTree() ? `🌳 ${jumpKey} to climb` : '');
   }

@@ -75,11 +75,12 @@ Turn a floor plan image or PDF into `layouts/<id>/layout.json`, register it, and
 | piano | [1.5, 0.6] | upright, keys face +z |
 | trampoline | [3.4, 3.4] | round, solid |
 | tree | [0.5, 0.5] | `kind: "pine"` for evergreens, `fruit: "#hex"` for fruit trees |
-| swingSet / nestSwing | [6, 1.8] / [6, 2.4] | A-frame swings; `seats` / `nests`; only the end posts are solid |
-| spinner | radius 1.4 | stand-on dish (0.43 m) |
+| swingSet / nestSwing | [6, 1.8] / [6, 2.4] | wood-log A-frame swings; `seats`: a count or a list of `belt` / `bucket` / `adaptive`; only the end posts are solid |
+| spinner | radius 1.3 | globe spinner; step onto its base and it turns with you |
 | ropeClimber | [6, 6] | rope pyramid, `height` 4.5; only the mast is solid |
-| slideMountain | `radius` 6 | hill in 4 terraces (0.55–2.2 m) you can jump up, two slides |
-| playHouse | [3.6, 3] | playhouse on a 0.6 m deck, door at +z, step in front |
+| slideMountain | [16, 17], `height` 2.2 | shaped hill: grass slope at +z (walk up, slide down), stone steps at +x, 3 slides at -x, raised deck at -z, shade sails |
+| playHouse | [3.2, 2.8] | A-frame playhouse on a 1.2 m deck, open front at +z, stairs at +x, double slide at -x |
+| fountain / diaperStation | [0.75, 0.45] / [0.9, 0.5] | drinking fountain; wall-mounted baby changing table (front +z) |
 | picnicTable / bench | [1.8, 0.8] / [1.6, 0.45] | benches face +z; NPCs sit on benches |
 | boulder | [1.2, 1] | climbable rock, `height` |
 | rug / ball | walk-over | rug uses `radius` (also good for round coloured ground patches) |
@@ -87,7 +88,7 @@ Turn a floor plan image or PDF into `layouts/<id>/layout.json`, register it, and
 | flowers | walk-over | flower bed, `size` |
 | box | [1, 1] | anything else: set `size`, `height`, `color` |
 
-Each type has a standing height (`TOPS` in `src/furniture.js`). Items under ~1 m can be jumped onto. If you add a new type, add its top there too.
+Each type has a standing height (`TOPS` in `src/furniture.js`). The kid steps onto anything up to 0.32 m automatically (stairs). Builders can also return several solid parts or a shaped-ground height function (see `slideMountain`). Items under ~1 m can be jumped onto. If you add a new type, add its top there too.
 
 Keep footprints at least 0.1 m inside the room edge, so they don't poke into the 0.15 m walls, and don't block doors.
 
