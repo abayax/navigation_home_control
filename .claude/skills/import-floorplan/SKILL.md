@@ -29,6 +29,9 @@ Turn a floor plan image or PDF into `layouts/<id>/layout.json`, register it, and
 - A garage (or any indoor room where riding a bike is OK) gets `"allowBike": true`; bikes can always go outdoors.
 - Outdoor areas (yard, patio, balcony, driveway, sidewalk) get `"outdoor": true`. Their edges become a fence, except where they touch a house wall or **another outdoor area** (a lawn next to a driveway stays open).
 - A fence that isn't on an outdoor area's outer edge (e.g. a backyard fence between the house and the side fence) goes in `"fences": [{ "from": [x, z], "to": [x, z] }]`. Gates in it are ordinary doors placed on that line.
+- Curved walkways go in `"paths": [{ "points": [[x, z], ...], "width": 2, "color": "#hex", "closed": false }]`. They are drawn as smooth flat ribbons you can walk on.
+- Floor patterns also include `rubber` (playground surface) and `sand`.
+- Concept maps / signs without measurements: agree an overall size with the user, then trace positions from pixels with a helper (see `layouts/jollyman-park/generate.py`).
 - If the drawing includes the surrounding lot (yards, driveway, sidewalk), model it. Tile the whole lot with outdoor rectangles so there are no gaps, and close it with the outer fence.
 - Diagonal or curved walls: approximate with rectangles and mention it in `notes`.
 - Floors: `floor` = a pastel kid-friendly hex color; `pattern` is one of `wood`, `tile`, `carpet`, `concrete`, `grass`.
@@ -72,7 +75,14 @@ Turn a floor plan image or PDF into `layouts/<id>/layout.json`, register it, and
 | piano | [1.5, 0.6] | upright, keys face +z |
 | trampoline | [3.4, 3.4] | round, solid |
 | tree | [0.5, 0.5] | `kind: "pine"` for evergreens, `fruit: "#hex"` for fruit trees |
-| rug / ball | walk-over | rug uses `radius` |
+| swingSet / nestSwing | [6, 1.8] / [6, 2.4] | A-frame swings; `seats` / `nests`; only the end posts are solid |
+| spinner | radius 1.4 | stand-on dish (0.43 m) |
+| ropeClimber | [6, 6] | rope pyramid, `height` 4.5; only the mast is solid |
+| slideMountain | `radius` 6 | hill in 4 terraces (0.55–2.2 m) you can jump up, two slides |
+| playHouse | [3.6, 3] | playhouse on a 0.6 m deck, door at +z, step in front |
+| picnicTable / bench | [1.8, 0.8] / [1.6, 0.45] | benches face +z; NPCs sit on benches |
+| boulder | [1.2, 1] | climbable rock, `height` |
+| rug / ball | walk-over | rug uses `radius` (also good for round coloured ground patches) |
 | mat | walk-over | flat rectangle, `size` + `color`: exercise mat, gravel, lawn or concrete patch |
 | flowers | walk-over | flower bed, `size` |
 | box | [1, 1] | anything else: set `size`, `height`, `color` |

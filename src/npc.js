@@ -15,8 +15,12 @@ const TALK_DISTANCE = 2.2;
 const TALK_FORGET = 3.2; // kid must go this far away before the next "hello"
 const PHRASE_SECONDS = 7; // new phrase while the kid stays close
 const BODY_RADIUS = 0.3; // for pushing the kid away
-const SIT_TYPES = new Set(['chair', 'sofa', 'bed']);
-const STAND_TYPES = { counter: 0.35, fridge: 0.4, sink: 0.35, bookshelf: 0.45, desk: 0.45, piano: 0.45, tv: 1.6 };
+const SIT_TYPES = new Set(['chair', 'sofa', 'bed', 'bench']);
+const STAND_TYPES = {
+  counter: 0.35, fridge: 0.4, sink: 0.35, bookshelf: 0.45, desk: 0.45, piano: 0.45, tv: 1.6,
+  // playground: grown-ups watching
+  swingSet: 1.2, nestSwing: 1.2, spinner: 0.6, slideMountain: 0.8, ropeClimber: 0.5, playHouse: 0.8, picnicTable: 0.45,
+};
 
 const rand = (a, b) => a + Math.random() * (b - a);
 const pick = (list) => list[Math.floor(Math.random() * list.length)];
@@ -52,9 +56,8 @@ export function parsePhrases(text) {
 /** Places where NPCs can sit or stand, derived from the layout's furniture. */
 export function findSpots(house, nav) {
   const spots = [];
-  for (const box of house.colliders.boxes) {
+  for (const box of house.items) {
     const { item } = box;
-    if (!item) continue;
     const swap = Math.abs(Math.sin(box.rot)) > 0.5;
     const halfW = (swap ? box.maxZ - box.minZ : box.maxX - box.minX) / 2; // local x half-size
     const halfD = (swap ? box.maxX - box.minX : box.maxZ - box.minZ) / 2; // local z half-size

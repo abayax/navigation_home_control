@@ -109,12 +109,19 @@ function floorTexture(pattern, color) {
       ctx.beginPath(); ctx.moveTo((i * size) / n, 0); ctx.lineTo((i * size) / n, size); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(0, (i * size) / n); ctx.lineTo(size, (i * size) / n); ctx.stroke();
     }
+  } else if (pattern === 'rubber') {
+    // poured playground rubber: base colour with little multicoloured flecks
+    const flecks = ['#ffffff', '#222222', shade(0.15), shade(-0.15)];
+    for (let i = 0; i < 1400; i++) {
+      ctx.fillStyle = flecks[i % flecks.length];
+      ctx.fillRect(Math.random() * size, Math.random() * size, 2, 2);
+    }
   } else {
-    // carpet / grass / concrete: speckles
+    // carpet / grass / concrete / sand: speckles
     if (pattern === 'grass') metersPerTile = 4;
-    const count = pattern === 'grass' ? 900 : 500;
+    const count = pattern === 'grass' ? 900 : pattern === 'sand' ? 1500 : 500;
     for (let i = 0; i < count; i++) {
-      ctx.fillStyle = shade((Math.random() - 0.5) * (pattern === 'grass' ? 0.16 : 0.08));
+      ctx.fillStyle = shade((Math.random() - 0.5) * (pattern === 'grass' ? 0.16 : pattern === 'sand' ? 0.12 : 0.08));
       const x = Math.random() * size, y = Math.random() * size;
       if (pattern === 'grass') ctx.fillRect(x, y, 2, 6);
       else ctx.fillRect(x, y, 3, 3);
@@ -126,6 +133,45 @@ function floorTexture(pattern, color) {
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
   tex.anisotropy = 4;
   return { tex, metersPerTile };
+}
+
+// A flat ribbon following a smooth (Catmull-Rom) curve through path.points
+function pathRibbon({ points, width = 2, color = '#efe9dc', closed = false }) {
+  const pts = points.map(([x, z]) => ({ x, z }));
+  const n = pts.length;
+  const at = (i) => (closed ? pts[(i + n) % n] : pts[Math.max(0, Math.min(n - 1, i))]);
+  const samples = [];
+  const segs = closed ? n : n - 1;
+  for (let i = 0; i < segs; i++) {
+    const p0 = at(i - 1), p1 = at(i), p2 = at(i + 1), p3 = at(i + 2);
+    const steps = Math.max(4, Math.ceil(Math.hypot(p2.x - p1.x, p2.z - p1.z) / 0.5));
+    for (let k = 0; k < steps; k++) {
+      const t = k / steps, t2 = t * t, t3 = t2 * t;
+      const f = (a, b, c2, d) => 0.5 * (2 * b + (-a + c2) * t + (2 * a - 5 * b + 4 * c2 - d) * t2 + (-a + 3 * b - 3 * c2 + d) * t3);
+      samples.push({ x: f(p0.x, p1.x, p2.x, p3.x), z: f(p0.z, p1.z, p2.z, p3.z) });
+    }
+  }
+  samples.push(closed ? samples[0] : pts[n - 1]);
+  const pos = [], idx = [];
+  samples.forEach((p, i) => {
+    const a = samples[Math.max(0, i - 1)], b = samples[Math.min(samples.length - 1, i + 1)];
+    let tx = b.x - a.x, tz = b.z - a.z;
+    const len = Math.hypot(tx, tz) || 1;
+    tx /= len; tz /= len;
+    const nx = -tz * (width / 2), nz = tx * (width / 2);
+    pos.push(p.x + nx, 0.027, p.z + nz, p.x - nx, 0.027, p.z - nz);
+    if (i > 0) {
+      const v = i * 2;
+      idx.push(v - 2, v - 1, v, v - 1, v + 1, v);
+    }
+  });
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setIndex(idx);
+  geo.computeVertexNormals();
+  const mesh = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ color, side: THREE.DoubleSide }));
+  mesh.receiveShadow = true;
+  return mesh;
 }
 
 // Mix a #rrggbb colour with white in screen (sRGB) space, so the result looks as expected
@@ -164,6 +210,7 @@ export function buildHouse(data) {
   const fences = [];
   const boxes = []; // furniture AABBs { minX, maxX, minZ, maxZ }
   const bikes = []; // rideable bikes { object, box, x, z, yaw }
+  const items = []; // every furniture item's overall footprint { minX.., rot, item, top }
 
   // Ground
   const ground = new THREE.Mesh(
@@ -374,14 +421,29 @@ export function buildHouse(data) {
     f.object.position.set(x, 0, z);
     f.object.rotation.y = rot;
     group.add(f.object);
-    if (f.size) {
-      const swap = Math.abs(Math.sin(rot)) > 0.5;
-      const [w, d] = swap ? [f.size[1], f.size[0]] : f.size;
-      const box = { minX: x - w / 2, maxX: x + w / 2, minZ: z - d / 2, maxZ: z + d / 2, top: f.top, bouncy: f.bouncy, item, rot, size: f.size };
+    if (!f.size) continue;
+    // Overall footprint (used by NPCs to find places to sit / stand)
+    const c = Math.cos(rot), sn = Math.sin(rot);
+    const swap = Math.abs(sn) > 0.5;
+    const aabb = (lx, lz, w0, d0) => {
+      const [w, d] = swap ? [d0, w0] : [w0, d0];
+      const cx = x + lx * c + lz * sn, cz = z - lx * sn + lz * c;
+      return { minX: cx - w / 2, maxX: cx + w / 2, minZ: cz - d / 2, maxZ: cz + d / 2 };
+    };
+    const footprint = { ...aabb(0, 0, f.size[0], f.size[1]), top: f.top, item, rot, size: f.size };
+    items.push(footprint);
+    if (f.colliders) {
+      // several solid parts (e.g. a playhouse deck and its walls)
+      for (const col of f.colliders) boxes.push({ ...aabb(col.x, col.z, col.w, col.d), top: col.top, part: item.type });
+    } else {
+      const box = { ...footprint, bouncy: f.bouncy };
       boxes.push(box);
       if (item.type === 'bike') bikes.push({ object: f.object, box, x, z, yaw: rot });
     }
   }
+
+  // Paths: smooth flat ribbons through points (walk over them)
+  for (const path of data.paths ?? []) group.add(pathRibbon(path));
 
   // Bounds of everything (for the map camera + minimap)
   const bounds = { minX: Infinity, maxX: -Infinity, minZ: Infinity, maxZ: -Infinity };
@@ -398,6 +460,7 @@ export function buildHouse(data) {
     fences,
     windows: windowSegs,
     bikes,
+    items,
     bounds,
     colliders: { segments: [...walls, ...fences], boxes },
   };

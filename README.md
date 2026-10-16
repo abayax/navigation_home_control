@@ -76,7 +76,7 @@ When the kid gets close (about 2 m, not through a wall), a speech bubble pops up
 
 ## Layouts
 
-Each floor plan becomes its own layout and is saved locally. New visitors start in the `default` layout from `layouts/index.json` (currently **Home**). After that, the game remembers the last one each device used. You can also open a specific one directly with `?layout=<id>`, e.g. `http://localhost:5173/?layout=office`.
+Each floor plan becomes its own layout and is saved locally. Layouts so far: **Home**, **Office**, and **Jollyman Park Playground** (traced from the park's concept sign, assumed ~70 × 55 m). New visitors start in the `default` layout from `layouts/index.json` (currently **Home**). After that, the game remembers the last one each device used. You can also open a specific one directly with `?layout=<id>`, e.g. `http://localhost:5173/?layout=office`.
 
 **Adding a new layout:**
 1. Put the floor plan (photo, sketch, screenshot or PDF, with measurements) in `plans/`.
@@ -101,6 +101,7 @@ Units are **meters**. `x` grows to the east, `z` grows to the south. The top-lef
 - Walls are painted per room: each side gets a light tint of that room's floor colour (or set `"wall": "#hex"` on a room), with a white baseboard. `"exteriorWall": "#hex"` at the top level sets the outside colour.
 - `doors[]`: `at: [x, z]` is a point on the wall, plus `width`. Openings 2.5 m or wider are treated as open-plan, with no lintel above.
 - `windows[]` (optional): `at: [x, z]` on a wall, `width`, optional `sill` / `top` heights in meters (default 0.9 / 2.1). Drawn as holes in the wall.
+- `paths[]` (optional): curved walkways `{ points: [[x, z], ...], width, color, closed }`, drawn as smooth ribbons.
 - `fences[]` (optional): extra fence lines `{ from: [x, z], to: [x, z] }`. Gates are doors on them. Outdoor areas that touch each other stay open.
 - `furniture[]`: `type`, `at: [x, z]`, optional `rot` (degrees), `size: [w, d]`, `color`. Types are listed in `.claude/skills/import-floorplan/SKILL.md`.
 - Big layouts can have a `generate.py` next to them that builds `layout.json` from the measurements (see `layouts/home/`).

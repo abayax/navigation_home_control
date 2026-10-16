@@ -348,6 +348,160 @@ const builders = {
     return null; // wall-mounted, nothing to bump into
   },
 
+  // ---------- playground equipment ----------
+  // Builders may return { size, colliders: [{ x, z, w, d, top }] } (local, metres)
+  // when an item has several solid parts; `size` is then just its overall footprint.
+
+  swingSet({ size = [6, 1.8], seats = 3, color = '#e85d75' }, g) {
+    const [w, d] = size;
+    aFrame(g, w, d, 2.4, color);
+    const seatColors = ['#ffbe0b', '#3a86ff', '#ff006e', '#8338ec'];
+    for (let i = 0; i < seats; i++) {
+      const x = -w / 2 + ((i + 0.5) * w) / seats;
+      for (const dx of [-0.22, 0.22]) cyl(g, 0.012, 0.012, 1.9, '#888888', x + dx, 1.45, 0, 6);
+      if (i === seats - 1) {
+        // bucket seat for little kids
+        box(g, 0.5, 0.25, 0.4, seatColors[i % 4], x, 0.6, 0);
+      } else {
+        box(g, 0.5, 0.05, 0.2, seatColors[i % 4], x, 0.5, 0);
+      }
+    }
+    return { size, colliders: postColliders(w, d) };
+  },
+
+  nestSwing({ size = [6, 2.4], nests = 2, color = '#ff9f1c' }, g) {
+    const [w, d] = size;
+    aFrame(g, w, d, 2.6, color);
+    for (let i = 0; i < nests; i++) {
+      const x = -w / 2 + ((i + 0.5) * w) / nests;
+      const ring = part(g, new THREE.TorusGeometry(0.55, 0.08, 10, 28), '#3a86ff', x, 0.55, 0);
+      ring.rotation.x = Math.PI / 2;
+      part(g, new THREE.CylinderGeometry(0.52, 0.52, 0.03, 24), '#22223b', x, 0.53, 0);
+      for (let k = 0; k < 4; k++) {
+        const a = (k * Math.PI) / 2 + Math.PI / 4;
+        const rope = cyl(g, 0.012, 0.012, 2.1, '#888888', x + Math.cos(a) * 0.25, 1.6, Math.sin(a) * 0.25, 6);
+        rope.rotation.z = Math.cos(a) * 0.15;
+        rope.rotation.x = -Math.sin(a) * 0.15;
+      }
+    }
+    return { size, colliders: postColliders(w, d) };
+  },
+
+  spinner({ radius = 1.3, color = '#06d6a0' }, g) {
+    cyl(g, 0.08, 0.1, 1.3, '#888888', 0, 0.65, 0, 12);
+    cyl(g, radius, radius, 0.08, color, 0, 0.37, 0, 32);
+    const rim = part(g, new THREE.TorusGeometry(radius, 0.05, 8, 40), '#ffbe0b', 0, 0.42, 0);
+    rim.rotation.x = Math.PI / 2;
+    for (let k = 0; k < 4; k++) {
+      // grab handles
+      const a = (k * Math.PI) / 2;
+      cyl(g, 0.025, 0.025, 0.7, '#ffbe0b', Math.cos(a) * radius * 0.6, 0.75, Math.sin(a) * radius * 0.6, 8);
+    }
+    ball(g, 0.14, '#ff006e', 0, 1.32, 0);
+    return [radius * 2, radius * 2];
+  },
+
+  ropeClimber({ size = [6, 6], height = 4.5, color = '#ff9f1c' }, g) {
+    const r = size[0] / 2;
+    cyl(g, 0.1, 0.12, height + 0.1, '#adb5bd', 0, (height + 0.1) / 2, 0, 12);
+    ball(g, 0.2, '#ff006e', 0, height + 0.15, 0);
+    for (let k = 0; k < 8; k++) {
+      // ropes from the top of the mast down to anchors on the ground
+      const pivot = new THREE.Group();
+      pivot.rotation.y = (k * Math.PI) / 4;
+      g.add(pivot);
+      const rope = cyl(pivot, 0.03, 0.03, Math.hypot(height, r), color, 0, height / 2, r / 2, 6);
+      rope.rotation.x = -Math.atan2(r, height);
+      cyl(pivot, 0.12, 0.15, 0.12, '#555555', 0, 0.06, r, 8); // anchor
+    }
+    for (const h of [0.9, 1.9, 2.9, 3.7]) {
+      const ring = part(g, new THREE.TorusGeometry(r * (1 - h / height), 0.03, 6, 32), color, 0, h, 0);
+      ring.rotation.x = Math.PI / 2;
+    }
+    return { size, colliders: [{ x: 0, z: 0, w: 0.4, d: 0.4, top: height + 0.1 }] };
+  },
+
+  // A grassy hill in terraces you can jump up, with two slides down the sides
+  slideMountain({ radius = 6, color = '#74c365' }, g) {
+    const levels = [[1, 0.55], [0.76, 1.1], [0.52, 1.65], [0.3, 2.2]];
+    const colliders = [];
+    levels.forEach(([k, top], i) => {
+      const r = radius * k;
+      cyl(g, r, r * 1.04, top, i % 2 ? '#86cf6e' : color, 0, top / 2, 0, 28);
+      colliders.push({ x: 0, z: 0, w: r * 1.8, d: r * 1.8, top });
+    });
+    // stepping stones on the front
+    for (const [x, z, s] of [[-1.2, radius * 0.9, 0.5], [0.8, radius * 0.66, 0.45], [-0.4, radius * 0.42, 0.4]]) {
+      const rock = ball(g, s, '#adb5bd', x, 0.2, z);
+      rock.scale.y = 0.5;
+    }
+    // slides: chutes from the top terrace down past the base, with side rails
+    for (const [sx, c] of [[1, '#ffbe0b'], [-1, '#3a86ff']]) {
+      const x0 = sx * radius * 0.3, x1 = sx * (radius + 1.6), y0 = 2.25, y1 = 0.3;
+      const len = Math.hypot(x1 - x0, y1 - y0);
+      const pivot = new THREE.Group();
+      pivot.position.set((x0 + x1) / 2, (y0 + y1) / 2, sx * 0.8);
+      pivot.rotation.z = Math.atan2(y1 - y0, x1 - x0);
+      g.add(pivot);
+      box(pivot, len, 0.05, 0.7, c, 0, 0, 0);
+      box(pivot, len, 0.18, 0.05, c, 0, 0.1, 0.35);
+      box(pivot, len, 0.18, 0.05, c, 0, 0.1, -0.35);
+    }
+    return { size: [radius * 2, radius * 2], colliders };
+  },
+
+  // Wooden playhouse on a deck you can jump onto (front faces +z, door in the middle)
+  playHouse({ size = [3.6, 3], color = '#c98f5a', roof = '#40916c' }, g) {
+    const [w, d] = size;
+    const deck = 0.6, wallH = 1.6, t = 0.1;
+    box(g, w, deck, d, '#a47148', 0, deck / 2, 0);
+    box(g, w, wallH, t, color, 0, deck + wallH / 2, -d / 2 + t / 2); // back
+    for (const sx of [-1, 1]) {
+      const x = sx * (w / 2 - t / 2);
+      box(g, t, 0.6, d, color, x, deck + 0.3, 0); // side, below window
+      box(g, t, 0.4, d, color, x, deck + wallH - 0.2, 0); // side, above window
+      for (const z of [-d / 2 + 0.3, d / 2 - 0.3]) box(g, t, wallH, 0.6, color, x, deck + wallH / 2, z);
+      box(g, (w - 1) / 2, wallH, t, color, sx * (w / 4 + 0.25), deck + wallH / 2, d / 2 - t / 2); // front, beside door
+    }
+    const roofMesh = part(g, new THREE.ConeGeometry(Math.max(w, d) * 0.82, 1.3, 4), roof, 0, deck + wallH + 0.65, 0);
+    roofMesh.rotation.y = Math.PI / 4;
+    box(g, 1.2, 0.3, 0.5, '#a47148', 0, 0.15, d / 2 + 0.25); // step
+    const top = deck + wallH;
+    return {
+      size: [w, d + 0.5],
+      colliders: [
+        { x: 0, z: 0, w, d, top: deck },
+        { x: 0, z: -d / 2 + t / 2, w, d: t, top },
+        { x: -(w / 2 - t / 2), z: 0, w: t, d, top },
+        { x: w / 2 - t / 2, z: 0, w: t, d, top },
+        { x: -(w / 4 + 0.25), z: d / 2 - t / 2, w: (w - 1) / 2, d: t, top },
+        { x: w / 4 + 0.25, z: d / 2 - t / 2, w: (w - 1) / 2, d: t, top },
+        { x: 0, z: d / 2 + 0.25, w: 1.2, d: 0.5, top: 0.3 },
+      ],
+    };
+  },
+
+  picnicTable({ size = [1.8, 0.8], color = '#b5835a' }, g) {
+    const [w, d] = size;
+    box(g, w, 0.05, d, color, 0, 0.75, 0);
+    for (const sx of [-1, 1]) box(g, 0.08, 0.72, d * 0.8, '#7f5539', sx * (w / 2 - 0.2), 0.37, 0);
+    return size;
+  },
+
+  bench({ size = [1.6, 0.45], color = '#b5835a' }, g) {
+    const [w, d] = size;
+    box(g, w, 0.05, d, color, 0, 0.45, 0);
+    box(g, w, 0.35, 0.05, color, 0, 0.7, -d / 2 + 0.03); // backrest
+    for (const sx of [-1, 1]) box(g, 0.06, 0.43, d * 0.9, '#555555', sx * (w / 2 - 0.12), 0.215, 0);
+    return size;
+  },
+
+  boulder({ size = [1.2, 1], height = 0.6, color = '#9a9a9a' }, g) {
+    const rock = part(g, new THREE.SphereGeometry(0.5, 7, 5), color, 0, height / 2, 0);
+    rock.scale.set(size[0], height, size[1]);
+    return size;
+  },
+
   ball({ color = '#ff595e' }, g) {
     ball(g, 0.25, color, 0, 0.25, 0);
     return null;
@@ -361,6 +515,7 @@ const TOPS = {
   counter: 0.92, fridge: 1.8, tub: 0.55, toilet: 0.445, sink: 0.855, tv: 1.25,
   car: 1.42, suv: 1.62, tree: 4, slide: 1.6, table: 0.765, chair: 0.5, piano: 1.25,
   trampoline: 0.92, bike: 1.2,
+  spinner: 0.43, picnicTable: 0.775, bench: 0.475, boulder: (item) => item.height ?? 0.6,
   box: (item) => item.height ?? 1,
   bookshelf: (item) => item.height ?? 1.8,
 };
@@ -382,7 +537,24 @@ export function buildFurniture(item) {
     return null;
   }
   const object = new THREE.Group();
-  const size = builder(item, object);
+  let size = builder(item, object);
+  let colliders = null;
+  if (size && !Array.isArray(size)) ({ size, colliders } = size);
   const top = typeof TOPS[item.type] === 'function' ? TOPS[item.type](item) : TOPS[item.type] ?? 1;
-  return { object, size, top, bouncy: BOUNCY.has(item.type) };
+  return { object, size, colliders, top, bouncy: BOUNCY.has(item.type) };
 }
+
+// Two A-frames (legs splayed front/back) joined by a top bar, centred, spanning x
+function aFrame(g, w, d, h, color) {
+  for (const sx of [-1, 1]) {
+    for (const sz of [-1, 1]) {
+      const len = Math.hypot(h, d / 2);
+      const leg = cyl(g, 0.05, 0.05, len, color, sx * w / 2, h / 2, (sz * d) / 4, 8);
+      leg.rotation.x = -sz * Math.atan2(d / 2, h); // tilt the leg out to (x, 0, sz·d/2)
+    }
+  }
+  const bar = cyl(g, 0.06, 0.06, w + 0.2, color, 0, h, 0, 10);
+  bar.rotation.z = Math.PI / 2;
+}
+
+const postColliders = (w, d) => [-1, 1].map((sx) => ({ x: (sx * w) / 2, z: 0, w: 0.3, d, top: 2.4 }));

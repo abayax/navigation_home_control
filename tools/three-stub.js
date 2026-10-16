@@ -34,6 +34,10 @@ export class SphereGeometry extends Geometry {}
 export class CapsuleGeometry extends Geometry {}
 export class CircleGeometry extends Geometry {}
 export class TorusGeometry extends Geometry {}
+export class ConeGeometry extends Geometry {}
+export class BufferGeometry extends Geometry { setAttribute() { return this; } setIndex() { return this; } computeVertexNormals() {} }
+export class Float32BufferAttribute { constructor(a, n) { this.array = a; this.itemSize = n; } }
+export class BufferAttribute extends Float32BufferAttribute {}
 
 export class MeshLambertMaterial {}
 export class MeshBasicMaterial {}
@@ -50,4 +54,5 @@ export class Color {
   getStyle() { return '#ffffff'; }
 }
 export const SRGBColorSpace = 'srgb';
+export const DoubleSide = 2;
 export const RepeatWrapping = 1000;

@@ -7,8 +7,10 @@ import { roomAt } from './house.js';
 const SQRT2 = Math.SQRT2;
 
 export class NavGrid {
-  constructor(house, rooms, { cell = 0.15, radius = 0.2 } = {}) {
+  constructor(house, rooms, { cell, radius = 0.2 } = {}) {
     const { minX, maxX, minZ, maxZ } = house.bounds;
+    // Fine cells for houses (narrow doors), coarser ones for big outdoor layouts
+    cell ??= (maxX - minX) * (maxZ - minZ) > 3000 ? 0.3 : 0.15;
     this.cell = cell;
     this.x0 = minX;
     this.z0 = minZ;

@@ -1,0 +1,1500 @@
+{
+  "name": "Jollyman Park Playground",
+  "units": "meters. x grows to the east, z grows to the south. rect = [x0, z0, x1, z1]",
+  "source": "source.png",
+  "notes": "Traced from the playground's concept sign (no measurements). Assumed ~70 x 55 m (about an acre) with a 14 m strip of park lawn around it. Zones are rectangles approximating the sign's curved areas; the white paths are smooth curves through traced points. Parking lot and restroom building left out. Equipment uses standard sizes: nest swing frame 6 m, swing sets 6 m (3 seats incl. a bucket seat), rope climber 4.5 m tall, slide mountain 12 m across in 4 jumpable terraces, playhouse 3.6 x 3 m on a 0.6 m deck.",
+  "spawn": {
+    "at": [
+      47.0,
+      42.5
+    ],
+    "facing": "north"
+  },
+  "rooms": [
+    {
+      "name": "Nest Swings",
+      "rect": [
+        14.0,
+        14.0,
+        32.0,
+        37.8
+      ],
+      "floor": "#9ad18b",
+      "pattern": "rubber",
+      "outdoor": true
+    },
+    {
+      "name": "Climber",
+      "rect": [
+        32.0,
+        14.0,
+        51.1,
+        37.8
+      ],
+      "floor": "#7cc95f",
+      "pattern": "rubber",
+      "outdoor": true
+    },
+    {
+      "name": "Slide Mountain",
+      "rect": [
+        51.1,
+        14.0,
+        70.7,
+        37.8
+      ],
+      "floor": "#8bd16a",
+      "pattern": "grass",
+      "outdoor": true
+    },
+    {
+      "name": "Garden",
+      "rect": [
+        70.7,
+        14.0,
+        84.0,
+        37.8
+      ],
+      "floor": "#8bd16a",
+      "pattern": "grass",
+      "outdoor": true
+    },
+    {
+      "name": "Sand Play",
+      "rect": [
+        14.0,
+        37.8,
+        32.0,
+        69.0
+      ],
+      "floor": "#a9d98f",
+      "pattern": "grass",
+      "outdoor": true
+    },
+    {
+      "name": "Forest House",
+      "rect": [
+        32.0,
+        37.8,
+        49.0,
+        69.0
+      ],
+      "floor": "#9ad18b",
+      "pattern": "rubber",
+      "outdoor": true
+    },
+    {
+      "name": "Gathering Area",
+      "rect": [
+        49.0,
+        37.8,
+        61.0,
+        53.0
+      ],
+      "floor": "#e3cfa8",
+      "pattern": "rubber",
+      "outdoor": true
+    },
+    {
+      "name": "Spinner",
+      "rect": [
+        61.0,
+        37.8,
+        71.0,
+        53.0
+      ],
+      "floor": "#a8dcc8",
+      "pattern": "rubber",
+      "outdoor": true
+    },
+    {
+      "name": "Picnic",
+      "rect": [
+        71.0,
+        37.8,
+        84.0,
+        53.0
+      ],
+      "floor": "#d8d2c0",
+      "pattern": "concrete",
+      "outdoor": true
+    },
+    {
+      "name": "Swings",
+      "rect": [
+        49.0,
+        53.0,
+        69.0,
+        69.0
+      ],
+      "floor": "#a8dcc8",
+      "pattern": "rubber",
+      "outdoor": true
+    },
+    {
+      "name": "Big Kids Lawn",
+      "rect": [
+        69.0,
+        53.0,
+        84.0,
+        69.0
+      ],
+      "floor": "#8bd16a",
+      "pattern": "grass",
+      "outdoor": true
+    },
+    {
+      "name": "Park",
+      "rects": [
+        [
+          0,
+          0,
+          98.0,
+          14.0
+        ],
+        [
+          0,
+          69.0,
+          98.0,
+          83.0
+        ],
+        [
+          0,
+          14.0,
+          14.0,
+          69.0
+        ],
+        [
+          84.0,
+          14.0,
+          98.0,
+          69.0
+        ]
+      ],
+      "floor": "#7cc45f",
+      "pattern": "grass",
+      "outdoor": true
+    }
+  ],
+  "doors": [
+    {
+      "at": [
+        14.0,
+        34.41
+      ],
+      "width": 3
+    },
+    {
+      "at": [
+        84.0,
+        28.67
+      ],
+      "width": 3
+    },
+    {
+      "at": [
+        64.86,
+        14.0
+      ],
+      "width": 3
+    }
+  ],
+  "fences": [
+    {
+      "from": [
+        14.0,
+        14.0
+      ],
+      "to": [
+        84.0,
+        14.0
+      ]
+    },
+    {
+      "from": [
+        84.0,
+        14.0
+      ],
+      "to": [
+        84.0,
+        69.0
+      ]
+    },
+    {
+      "from": [
+        84.0,
+        69.0
+      ],
+      "to": [
+        14.0,
+        69.0
+      ]
+    },
+    {
+      "from": [
+        14.0,
+        69.0
+      ],
+      "to": [
+        14.0,
+        14.0
+      ]
+    }
+  ],
+  "paths": [
+    {
+      "points": [
+        [
+          8.0,
+          34.41
+        ],
+        [
+          14.0,
+          34.41
+        ],
+        [
+          22.75,
+          37.83
+        ],
+        [
+          33.69,
+          40.52
+        ],
+        [
+          45.72,
+          41.74
+        ],
+        [
+          54.47,
+          40.89
+        ],
+        [
+          61.03,
+          38.44
+        ],
+        [
+          68.14,
+          32.94
+        ],
+        [
+          74.16,
+          29.89
+        ],
+        [
+          84.0,
+          28.67
+        ],
+        [
+          90.0,
+          28.67
+        ]
+      ],
+      "width": 2.6
+    },
+    {
+      "points": [
+        [
+          31.5,
+          39.06
+        ],
+        [
+          32.05,
+          31.72
+        ],
+        [
+          34.23,
+          23.78
+        ],
+        [
+          39.16,
+          21.33
+        ],
+        [
+          46.81,
+          20.48
+        ],
+        [
+          53.38,
+          21.7
+        ],
+        [
+          52.3,
+          22.6
+        ]
+      ],
+      "width": 2.2
+    },
+    {
+      "points": [
+        [
+          64.86,
+          8.0
+        ],
+        [
+          64.86,
+          14.0
+        ],
+        [
+          63.77,
+          18.28
+        ],
+        [
+          63.6,
+          19.2
+        ]
+      ],
+      "width": 2.2
+    },
+    {
+      "points": [
+        [
+          58.5,
+          41.0
+        ],
+        [
+          59.2,
+          47.0
+        ],
+        [
+          60.2,
+          52.5
+        ]
+      ],
+      "width": 1.6
+    },
+    {
+      "points": [
+        [
+          38.0,
+          41.2
+        ],
+        [
+          40.0,
+          44.5
+        ],
+        [
+          40.7,
+          47.2
+        ]
+      ],
+      "width": 1.6
+    },
+    {
+      "points": [
+        [
+          59.1,
+          45.0
+        ],
+        [
+          57.75,
+          48.25
+        ],
+        [
+          54.5,
+          49.6
+        ],
+        [
+          51.25,
+          48.25
+        ],
+        [
+          49.9,
+          45.0
+        ],
+        [
+          51.25,
+          41.75
+        ],
+        [
+          54.5,
+          40.4
+        ],
+        [
+          57.75,
+          41.75
+        ]
+      ],
+      "width": 1.4,
+      "color": "#d9c49c",
+      "closed": true
+    },
+    {
+      "points": [
+        [
+          7.0,
+          7.0
+        ],
+        [
+          49.0,
+          6.0
+        ],
+        [
+          91.0,
+          7.0
+        ],
+        [
+          92.0,
+          41.5
+        ],
+        [
+          91.0,
+          76.0
+        ],
+        [
+          49.0,
+          77.0
+        ],
+        [
+          7.0,
+          76.0
+        ],
+        [
+          6.0,
+          41.5
+        ]
+      ],
+      "width": 2.4,
+      "closed": true
+    }
+  ],
+  "furniture": [
+    {
+      "type": "rug",
+      "at": [
+        23.84,
+        25.61
+      ],
+      "radius": 5.2,
+      "color": "#7fd1c7"
+    },
+    {
+      "type": "rug",
+      "at": [
+        21.44,
+        48.59
+      ],
+      "radius": 6.0,
+      "color": "#ecd6a4"
+    },
+    {
+      "type": "rug",
+      "at": [
+        68.14,
+        43.94
+      ],
+      "radius": 4.6,
+      "color": "#7fd1c7"
+    },
+    {
+      "type": "rug",
+      "at": [
+        60.48,
+        57.39
+      ],
+      "radius": 6.2,
+      "color": "#7fd1c7"
+    },
+    {
+      "type": "rug",
+      "at": [
+        40.8,
+        49.44
+      ],
+      "radius": 4.8,
+      "color": "#b7e4a0"
+    },
+    {
+      "type": "rug",
+      "at": [
+        54.5,
+        45.0
+      ],
+      "radius": 3.6,
+      "color": "#cdb68e"
+    },
+    {
+      "type": "nestSwing",
+      "at": [
+        23.84,
+        25.61
+      ],
+      "size": [
+        6,
+        2.4
+      ]
+    },
+    {
+      "type": "ropeClimber",
+      "at": [
+        39.16,
+        32.33
+      ],
+      "size": [
+        6,
+        6
+      ],
+      "height": 4.5
+    },
+    {
+      "type": "slideMountain",
+      "at": [
+        58.3,
+        25.61
+      ],
+      "radius": 6
+    },
+    {
+      "type": "playHouse",
+      "at": [
+        40.8,
+        49.44
+      ],
+      "rot": 180,
+      "size": [
+        3.6,
+        3
+      ]
+    },
+    {
+      "type": "spinner",
+      "at": [
+        68.14,
+        43.94
+      ],
+      "radius": 1.4
+    },
+    {
+      "type": "swingSet",
+      "at": [
+        57.8,
+        58.2
+      ],
+      "size": [
+        6,
+        1.8
+      ],
+      "seats": 3
+    },
+    {
+      "type": "swingSet",
+      "at": [
+        63.6,
+        62.8
+      ],
+      "size": [
+        6,
+        1.8
+      ],
+      "seats": 3,
+      "color": "#3a86ff"
+    },
+    {
+      "type": "table",
+      "at": [
+        25.0,
+        45.0
+      ],
+      "size": [
+        1.6,
+        0.8
+      ],
+      "color": "#e9c46a"
+    },
+    {
+      "type": "picnicTable",
+      "at": [
+        74.0,
+        41.2
+      ],
+      "size": [
+        1.8,
+        0.8
+      ]
+    },
+    {
+      "type": "bench",
+      "at": [
+        74.0,
+        40.45
+      ],
+      "size": [
+        1.8,
+        0.4
+      ]
+    },
+    {
+      "type": "bench",
+      "at": [
+        74.0,
+        41.95
+      ],
+      "size": [
+        1.8,
+        0.4
+      ],
+      "rot": 180
+    },
+    {
+      "type": "picnicTable",
+      "at": [
+        79.5,
+        41.6
+      ],
+      "size": [
+        1.8,
+        0.8
+      ]
+    },
+    {
+      "type": "bench",
+      "at": [
+        79.5,
+        40.85
+      ],
+      "size": [
+        1.8,
+        0.4
+      ]
+    },
+    {
+      "type": "bench",
+      "at": [
+        79.5,
+        42.35
+      ],
+      "size": [
+        1.8,
+        0.4
+      ],
+      "rot": 180
+    },
+    {
+      "type": "picnicTable",
+      "at": [
+        76.5,
+        47.5
+      ],
+      "size": [
+        1.8,
+        0.8
+      ]
+    },
+    {
+      "type": "bench",
+      "at": [
+        76.5,
+        46.75
+      ],
+      "size": [
+        1.8,
+        0.4
+      ]
+    },
+    {
+      "type": "bench",
+      "at": [
+        76.5,
+        48.25
+      ],
+      "size": [
+        1.8,
+        0.4
+      ],
+      "rot": 180
+    },
+    {
+      "type": "bench",
+      "at": [
+        50.4,
+        45.0
+      ],
+      "rot": 90
+    },
+    {
+      "type": "bench",
+      "at": [
+        58.6,
+        45.0
+      ],
+      "rot": -90
+    },
+    {
+      "type": "bench",
+      "at": [
+        54.5,
+        50.6
+      ],
+      "rot": 180
+    },
+    {
+      "type": "bench",
+      "at": [
+        27.8,
+        53.0
+      ],
+      "rot": -90
+    },
+    {
+      "type": "bench",
+      "at": [
+        45.0,
+        39.4
+      ]
+    },
+    {
+      "type": "bench",
+      "at": [
+        66.0,
+        55.0
+      ],
+      "rot": 180
+    },
+    {
+      "type": "boulder",
+      "at": [
+        51.6,
+        41.9
+      ],
+      "height": 0.5,
+      "size": [
+        1.2,
+        1.0
+      ]
+    },
+    {
+      "type": "boulder",
+      "at": [
+        57.2,
+        48.4
+      ],
+      "height": 0.45,
+      "size": [
+        1.0,
+        0.9
+      ]
+    },
+    {
+      "type": "boulder",
+      "at": [
+        35.0,
+        36.0
+      ],
+      "height": 0.6,
+      "size": [
+        1.4,
+        1.1
+      ]
+    },
+    {
+      "type": "boulder",
+      "at": [
+        45.0,
+        35.5
+      ],
+      "height": 0.55,
+      "size": [
+        1.2,
+        1.2
+      ]
+    },
+    {
+      "type": "boulder",
+      "at": [
+        17.5,
+        41.0
+      ],
+      "height": 0.5,
+      "size": [
+        1.1,
+        0.9
+      ]
+    },
+    {
+      "type": "boulder",
+      "at": [
+        29.6,
+        59.0
+      ],
+      "height": 0.5,
+      "size": [
+        1.3,
+        1.0
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        17.0,
+        17.0
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        30.0,
+        17.5
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        48.0,
+        16.5
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        72.0,
+        18.0
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        77.5,
+        23.0
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        81.0,
+        35.0
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        16.5,
+        60.0
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        28.0,
+        66.0
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        45.0,
+        65.0
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        71.0,
+        66.0
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        80.5,
+        60.0
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        81.0,
+        50.5
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        34.5,
+        44.0
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        49.6,
+        35.5
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        17.0,
+        30.0
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        10.45,
+        10.1
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        17.6,
+        10.87
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        24.32,
+        10.81
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        30.79,
+        9.94
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        36.66,
+        11.45
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        42.24,
+        11.05
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        51.54,
+        10.59
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        59.15,
+        11.52
+      ],
+      "kind": "pine"
+    },
+    {
+      "type": "tree",
+      "at": [
+        73.77,
+        10.16
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        80.85,
+        10.54
+      ],
+      "kind": "pine"
+    },
+    {
+      "type": "tree",
+      "at": [
+        86.33,
+        10.62
+      ],
+      "kind": "pine"
+    },
+    {
+      "type": "tree",
+      "at": [
+        87.56,
+        17.6
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        87.35,
+        37.3
+      ],
+      "kind": "pine"
+    },
+    {
+      "type": "tree",
+      "at": [
+        87.66,
+        45.18
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        86.44,
+        54.13
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        86.5,
+        62.26
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        87.54,
+        68.53
+      ],
+      "kind": "pine"
+    },
+    {
+      "type": "tree",
+      "at": [
+        84.74,
+        71.83
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        76.39,
+        72.36
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        69.85,
+        73.09
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        62.4,
+        71.32
+      ],
+      "kind": "pine"
+    },
+    {
+      "type": "tree",
+      "at": [
+        54.56,
+        73.19
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        45.64,
+        71.97
+      ],
+      "kind": "pine"
+    },
+    {
+      "type": "tree",
+      "at": [
+        37.41,
+        72.12
+      ],
+      "kind": "pine"
+    },
+    {
+      "type": "tree",
+      "at": [
+        31.47,
+        71.32
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        23.48,
+        71.7
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        18.13,
+        71.36
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        10.9,
+        72.54
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        11.53,
+        63.15
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        10.52,
+        57.45
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        10.1,
+        47.42
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        10.27,
+        41.7
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        10.54,
+        27.49
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        11.18,
+        18.79
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        11.15,
+        10.32
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        3.56,
+        3.75
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        12.06,
+        2.8
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        19.31,
+        2.12
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        25.11,
+        2.32
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        32.42,
+        2.0
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        39.46,
+        2.73
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        47.5,
+        3.23
+      ],
+      "kind": "pine"
+    },
+    {
+      "type": "tree",
+      "at": [
+        53.19,
+        2.69
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        60.64,
+        3.7
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        71.3,
+        2.97
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        77.28,
+        2.69
+      ],
+      "kind": "pine"
+    },
+    {
+      "type": "tree",
+      "at": [
+        86.09,
+        2.32
+      ],
+      "kind": "pine"
+    },
+    {
+      "type": "tree",
+      "at": [
+        92.82,
+        3.06
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        95.09,
+        5.9
+      ],
+      "kind": "pine"
+    },
+    {
+      "type": "tree",
+      "at": [
+        95.96,
+        15.87
+      ],
+      "kind": "pine"
+    },
+    {
+      "type": "tree",
+      "at": [
+        94.52,
+        23.78
+      ],
+      "kind": "pine"
+    },
+    {
+      "type": "tree",
+      "at": [
+        95.54,
+        31.12
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        94.66,
+        39.7
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        95.97,
+        50.28
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        95.64,
+        59.36
+      ],
+      "kind": "pine"
+    },
+    {
+      "type": "tree",
+      "at": [
+        95.04,
+        65.81
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        94.06,
+        72.16
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        95.39,
+        80.85
+      ],
+      "kind": "pine"
+    },
+    {
+      "type": "tree",
+      "at": [
+        87.93,
+        80.98
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        76.95,
+        79.44
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        69.4,
+        79.41
+      ],
+      "kind": "pine"
+    },
+    {
+      "type": "tree",
+      "at": [
+        62.16,
+        80.68
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        53.54,
+        80.6
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        46.85,
+        80.82
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        37.81,
+        79.96
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        30.84,
+        79.67
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        21.93,
+        79.79
+      ],
+      "kind": "pine"
+    },
+    {
+      "type": "tree",
+      "at": [
+        14.03,
+        80.45
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        5.38,
+        79.3
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        3.61,
+        72.76
+      ],
+      "kind": "pine"
+    },
+    {
+      "type": "tree",
+      "at": [
+        3.96,
+        64.41
+      ],
+      "kind": "pine"
+    },
+    {
+      "type": "tree",
+      "at": [
+        3.1,
+        55.69
+      ],
+      "kind": "pine"
+    },
+    {
+      "type": "tree",
+      "at": [
+        3.94,
+        50.28
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        3.87,
+        41.55
+      ],
+      "kind": "pine"
+    },
+    {
+      "type": "tree",
+      "at": [
+        3.65,
+        31.57
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        2.59,
+        24.32
+      ]
+    },
+    {
+      "type": "tree",
+      "at": [
+        2.52,
+        16.17
+      ],
+      "kind": "pine"
+    },
+    {
+      "type": "tree",
+      "at": [
+        3.82,
+        9.16
+      ],
+      "kind": "pine"
+    }
+  ]
+}

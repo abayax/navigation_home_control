@@ -34,7 +34,7 @@ const { resolveCollisions } = await import(pathToFileURL(resolve(root, 'src/coll
 
 const PLAYER_R = 0.25; // keep in sync with player.radius in src/main.js
 const GRID = 0.1;
-const PATTERNS = ['wood', 'tile', 'carpet', 'concrete', 'grass'];
+const PATTERNS = ['wood', 'tile', 'carpet', 'concrete', 'grass', 'rubber', 'sand'];
 const SQFT_PER_M2 = 10.7639;
 
 function validate(file) {
