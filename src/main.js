@@ -29,8 +29,9 @@ const SLIDE_MAX = 3.2; // m/s sliding down a grass slope
 const SLIDE_DELAY = 0.25; // stand still this long on a slope before sliding
 const SPIN_MAX = 1.6; // rad/s for a spinner you stand on
 const SLIDE_RIDE_SPEED = 3.4; // m/s going down a slide
-const SWING_RATE = 2.4; // rad/s of the swing's back-and-forth
-const SWING_MAX = 0.65; // biggest swing angle (rad)
+const SWING_RATE = 2.4; // rad/s of the swing's back-and-forth (a bit faster when swinging high)
+const SWING_EASY = 0.3; // how high a swing goes by itself (rad)
+const SWING_MAX = Math.PI / 2; // hold forward to pump all the way up to horizontal
 const FACING = { north: Math.PI, south: 0, east: Math.PI / 2, west: -Math.PI / 2 };
 
 const { layouts, current, data } = await loadLayout();
@@ -73,9 +74,10 @@ const spots = findSpots(house, nav);
 const takenSpots = new Set();
 let npcs = [];
 try {
-  const defs = await loadNpcDefs();
+  // each NPC can list the layouts it appears in (e.g. the other kids only at the playground)
+  const defs = (await loadNpcDefs()).filter((d) => !d.layouts || d.layouts.includes(current.id));
   const hudEl = document.getElementById('hud');
-  npcs = defs.map((def) => new Npc(def, { nav, spots, taken: takenSpots, rooms: data.rooms, walls: house.walls, scene, hudEl }));
+  npcs = defs.map((def) => new Npc(def, { nav, spots, taken: takenSpots, rooms: data.rooms, walls: house.walls, scene, hudEl, house }));
 } catch (e) {
   console.warn('No NPCs:', e);
 }
@@ -166,7 +168,7 @@ function nearestClimb() {
   let best = null, bestD = Infinity;
   for (const c of house.climbs) {
     const d = Math.hypot(c.x - player.x, c.z - player.z);
-    if (d < c.reach + player.radius && d < bestD && !lineBlocked(player.x, player.z, c.x, c.z, house.colliders.segments)) {
+    if (d < c.reach + player.radius && d >= c.minDist && d < bestD && !lineBlocked(player.x, player.z, c.x, c.z, house.colliders.segments)) {
       best = c;
       bestD = d;
     }
@@ -181,6 +183,7 @@ function startClimb(spot) {
   climb = { spot, phase: 'up', t: 0, from: { x: player.x, z: player.z }, top };
   player.vy = 0;
   faceBack = false;
+  if (spot.pose === 'hang') player.yaw = player.targetYaw = Math.atan2(spot.x - player.x, spot.z - player.z); // face it
 }
 
 // ---------- slides and swings ----------
@@ -190,7 +193,7 @@ function nearestSlide() {
   let best = null, bestD = 0.9;
   for (const sl of house.slides) {
     const d = Math.hypot(sl.x0 - player.x, sl.z0 - player.z);
-    if (d < bestD && Math.abs(player.y - sl.y0) < 0.45) { best = sl; bestD = d; }
+    if (d < bestD && Math.abs(player.y - sl.y0) < 0.45 && !sl.rider) { best = sl; bestD = d; }
   }
   return best;
 }
@@ -199,7 +202,7 @@ function nearestSwing() {
   let best = null, bestD = 0.9;
   for (const sw of house.swings) {
     const d = Math.hypot(sw.x - player.x, sw.z - player.z);
-    if (d < bestD && player.y < 0.1) { best = sw; bestD = d; }
+    if (d < bestD && player.y < 0.1 && !sw.rider) { best = sw; bestD = d; }
   }
   return best;
 }
@@ -241,11 +244,17 @@ function updateRide(dt) {
     player.grounded = true;
     player.yaw = player.targetYaw = bodyYaw = sw.yaw;
     resolveCollisions(player, house.colliders);
+    sw.rider = null;
     ride = null;
     return;
   }
+  // Hold forward to pump higher, back to slow down; otherwise it settles to an easy swing
   ride.t += dt;
-  const a = Math.min(SWING_MAX, ride.t * 0.18) * Math.sin(SWING_RATE * ride.t);
+  if (input.held('up')) ride.amp = Math.min(SWING_MAX, ride.amp + 0.35 * dt);
+  else if (input.held('down')) ride.amp = Math.max(0, ride.amp - 0.5 * dt);
+  else ride.amp += (Math.min(SWING_EASY, ride.t * 0.15) - ride.amp) * Math.min(1, dt * (ride.amp > SWING_EASY ? 0.15 : 2));
+  ride.phase += (SWING_RATE + ride.amp * 0.8) * dt;
+  const a = ride.amp * Math.sin(ride.phase);
   sw.pivot.rotation.x = -a;
   player.x = sw.x + fx * sw.length * Math.sin(a);
   player.z = sw.z + fz * sw.length * Math.sin(a);
@@ -274,6 +283,17 @@ function updateClimb(dt) {
   player.z = from.z + (top.z - from.z) * h;
   player.y = top.y * ease;
   if (climb.phase === 'up' && climb.t >= 1) climb.phase = 'top';
+  // Hanging on a spinner: it carries you around
+  const sp = climb.spot.spinner;
+  if (climb.phase === 'top' && sp?.speed) {
+    const a = sp.speed * dt, dx = top.x - sp.x, dz = top.z - sp.z;
+    top.x = sp.x + dx * Math.cos(a) + dz * Math.sin(a);
+    top.z = sp.z - dx * Math.sin(a) + dz * Math.cos(a);
+    player.x = top.x;
+    player.z = top.z;
+    player.yaw += a;
+    player.targetYaw += a;
+  }
   if (climb.phase === 'down' && climb.t >= 1) {
     climb = null;
     player.y = 0;
@@ -281,7 +301,7 @@ function updateClimb(dt) {
     player.support = null;
     return { sit: 0 };
   }
-  return { sit: climb.phase === 'top' ? 1 : 0 };
+  return { sit: climb.phase === 'top' && climb.spot.pose !== 'hang' ? 1 : 0 };
 }
 
 function showPrompt(text, seconds = 0) {
@@ -347,9 +367,33 @@ function updateCamera(dt) {
 }
 
 // ---------- game loop ----------
+// Spinners turn while someone rides them (kid standing inside or hanging on, or an
+// NPC), and slow down after everyone hops off. Runs every frame.
+function updateSpinners(dt) {
+  for (const sp of house.spinners) {
+    const onIt = !ride && !climb && !riding && player.grounded && player.support === sp.box;
+    const hanging = climb?.phase === 'top' && climb.spot.spinner === sp;
+    const ridden = onIt || hanging || npcs.some((n) => n.spinner === sp);
+    sp.speed = ridden ? Math.min(SPIN_MAX, (sp.speed ?? 0) + 1.2 * dt) : Math.max(0, (sp.speed ?? 0) - 0.6 * dt);
+    if (!sp.speed) continue;
+    const a = sp.speed * dt;
+    sp.object.rotation.y += a;
+    if (onIt) {
+      const dx = player.x - sp.x, dz = player.z - sp.z;
+      player.x = sp.x + dx * Math.cos(a) + dz * Math.sin(a);
+      player.z = sp.z - dx * Math.sin(a) + dz * Math.cos(a);
+      player.yaw += a;
+      player.targetYaw += a;
+      bodyYaw += a;
+    }
+  }
+
+}
+
 const angleDiff = (a, b) => Math.atan2(Math.sin(b - a), Math.cos(b - a));
 
 function update(dt) {
+  updateSpinners(dt);
   // In the map view the controls follow the screen: up = up the map, left = left, ...
   // The kid turns to face that way, then walks. Otherwise: tank-style turning.
   const mapControls = mapMode;
@@ -376,7 +420,7 @@ function update(dt) {
   // On a slide or a swing: the ride carries her
   if (ride) {
     updateRide(dt);
-    showPrompt(ride?.kind === 'swing' ? `${jumpKey} to hop off` : '');
+    showPrompt(ride?.kind === 'swing' ? `${touch ? 'Hold ▲' : 'Hold ↑'} to swing higher · ${jumpKey} to hop off` : '');
     for (const npc of npcs) npc.update(dt, player, npcs.filter((o) => o !== npc));
     updateCamera(dt);
     hud.update(player.x, player.z, player.yaw, npcs);
@@ -408,7 +452,8 @@ function update(dt) {
     return;
   } else if (player.grounded && player.y < 0.05 && input.jumpQueued && nearestSwing()) {
     input.consumeJump();
-    ride = { kind: 'swing', s: nearestSwing(), t: 0 };
+    ride = { kind: 'swing', s: nearestSwing(), t: 0, amp: 0, phase: 0 };
+    ride.s.rider = 'kid';
     faceBack = false;
     return;
   } else if (player.grounded && player.y < 0.05 && input.jumpQueued && nearestBike()) {
@@ -459,23 +504,6 @@ function update(dt) {
   } else {
     slideSpeed = 0;
     if (!(steep > 0.2 && steep < 1.0)) stillOnSlope = 0;
-  }
-
-  // Spinners turn while you stand on them (and slow down after you hop off)
-  for (const sp of house.spinners) {
-    const onIt = player.grounded && player.support === sp.box;
-    sp.speed = onIt ? Math.min(SPIN_MAX, (sp.speed ?? 0) + 1.2 * dt) : Math.max(0, (sp.speed ?? 0) - 0.6 * dt);
-    if (!sp.speed) continue;
-    const a = sp.speed * dt;
-    sp.object.rotation.y += a;
-    if (onIt) {
-      const dx = player.x - sp.x, dz = player.z - sp.z;
-      player.x = sp.x + dx * Math.cos(a) + dz * Math.sin(a);
-      player.z = sp.z - dx * Math.sin(a) + dz * Math.cos(a);
-      player.yaw += a;
-      player.targetYaw += a;
-      bodyYaw += a;
-    }
   }
 
   if (riding) {

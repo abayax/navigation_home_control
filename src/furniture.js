@@ -444,6 +444,8 @@ const builders = {
         { x: 0, z: 0, w: 0.3, d: 0.3, top },
         { x: 0, z: 0, w: r * 1.4, d: r * 1.4, top: 0.28, spin: true },
       ],
+      // or climb onto the outside and hang on while it spins
+      climb: { y: 0.6, reach: r + 0.6, offset: r + 0.12, minDist: r * 0.8, pose: 'hang' },
     };
   },
 

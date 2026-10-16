@@ -35,6 +35,7 @@ Options: `--layout office` opens straight into a layout, `--no-browser` just ser
 | Climb a tree or the rope climber / climb down (stand next to it) | Space | ⤒ button |
 | Go down a slide (stand at its top) | Space | ⤒ button |
 | Sit on a swing / hop off (stand by the seat) | Space | ⤒ button |
+| …on a swing: swing higher / slow down | hold ↑ / hold ↓ | hold ▲ / hold ▼ |
 | Run (2.6× faster) | double-tap ↑ and hold (or hold Shift) | double-tap ▲ and hold, or tap the view then drag |
 | Map view (top-down overview) | M | 🗺️ button or tap the minimap |
 | …in the map view: move up / down / left / right on the map | arrow keys (she turns that way, then walks; two keys = diagonal) | hold ▲ ▼ ↰ ↱, or drag in any direction |
@@ -45,7 +46,11 @@ Jumping: the kid jumps about 1 m and can land on beds, couches, chairs, tables, 
 
 Bike: the green bike starts in the garage. Stand next to it and jump to ride (faster than walking); jump again to get off, and it stays where you left it. Bikes only go in outdoor areas and rooms marked `"allowBike": true` (the garage); they stop at doors into the house.
 
-## Family (Mom and Dad)
+## Family and friends (NPCs)
+
+Mom and Dad appear at home and in the playground; three other kids (Lily, Max, Noah) only in the playground. Which layouts each one appears in is the `layouts` list in `npcs/npcs.json`; `kind` is `adult` or `kid`. The kids mostly play (slides, swings, climbing, the spinner) and run around; grown-ups mostly sit and watch but sometimes play too. The kids' phrases are in `npcs/kids.txt`.
+
+### Mom and Dad
 
 Mom and Dad walk around the whole place on their own: rooms, backyard, front yard, driveway. Every so often each picks something to do: sit on a chair, couch, bed or bench; stand at the kitchen counter, fridge, sink, a bookshelf or in front of the TV; sit in the car (you can see them through the window); or wander somewhere and pause. They show up as coloured dots on the minimap.
 

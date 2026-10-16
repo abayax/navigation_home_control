@@ -443,7 +443,7 @@ export function buildHouse(data) {
     const footprint = { ...aabb(0, 0, f.size[0], f.size[1]), top: f.top, item, rot, size: f.size };
     items.push(footprint);
     const toWorld = (lx, lz) => ({ x: x + lx * c + lz * sn, z: z - lx * sn + lz * c });
-    if (f.climb) climbs.push({ ...toWorld(0, 0), y: f.climb.y, reach: f.climb.reach, offset: f.climb.offset ?? 0, type: item.type });
+
     for (const sl of f.slides ?? []) {
       const a = toWorld(sl.x0, sl.z0), b = toWorld(sl.x1, sl.z1);
       slides.push({ x0: a.x, z0: a.z, y0: sl.y0, x1: b.x, z1: b.z, y1: sl.y1 });
@@ -470,7 +470,15 @@ export function buildHouse(data) {
         boxes.push(box);
         if (col.spin) spinners.push({ object: f.object, box, x, z }); // stand on it and it turns
       }
-    } else if (!f.terrain) {
+    }
+    if (f.climb) {
+      climbs.push({
+        ...toWorld(0, 0), y: f.climb.y, reach: f.climb.reach, offset: f.climb.offset ?? 0,
+        minDist: f.climb.minDist ?? 0, pose: f.climb.pose ?? 'sit', type: item.type,
+        spinner: spinners.find((sp) => sp.object === f.object) ?? null, // hang on while it spins
+      });
+    }
+    if (!f.colliders && !f.terrain) {
       const box = { ...footprint, bouncy: f.bouncy };
       boxes.push(box);
       if (item.type === 'bike') bikes.push({ object: f.object, box, x, z, yaw: rot });

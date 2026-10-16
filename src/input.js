@@ -68,10 +68,16 @@ export class Input {
       (this.dragRun && dragging) || (this.dash !== null && this.held(this.dash));
   }
 
-  /** A direction was pressed: pressing the same one twice quickly starts running. */
+  /**
+   * A direction was pressed: pressing the same one twice quickly starts running.
+   * Pressing another direction (e.g. turning while running forward) keeps the run
+   * going as long as the running key is still held.
+   */
   #dirPressed(dir) {
     const now = performance.now();
-    this.dash = this.lastPress.dir === dir && now - this.lastPress.at < DOUBLE_TAP_MS ? dir : null;
+    const doubleTap = this.lastPress.dir === dir && now - this.lastPress.at < DOUBLE_TAP_MS;
+    if (doubleTap) this.dash = dir;
+    else if (this.dash === null || this.dash === dir || !this.held(this.dash)) this.dash = null;
     this.lastPress = { dir, at: now };
   }
 

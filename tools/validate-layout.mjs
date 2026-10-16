@@ -191,7 +191,9 @@ for (const file of files) {
         if (!n.phrases || !existsSync(pf)) { errs.push(`${n.name}: phrase file "${n.phrases}" not found in npcs/`); continue; }
         const count = readFileSync(pf, 'utf8').split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !l.startsWith('#')).length;
         if (!count) errs.push(`${n.name}: ${n.phrases} has no phrases`);
-        lines.push(`    ${n.name.padEnd(22)} ${String(count).padStart(4)} phrases (${n.phrases})`);
+        const known = JSON.parse(readFileSync(resolve(root, 'layouts/index.json'), 'utf8')).layouts.map((l) => l.id);
+        for (const id of n.layouts ?? []) if (!known.includes(id)) errs.push(`${n.name}: layout "${id}" is not in layouts/index.json`);
+        lines.push(`    ${n.name.padEnd(22)} ${String(count).padStart(4)} phrases (${n.phrases})  ${n.kind ?? 'adult'}, in ${n.layouts ? n.layouts.join(', ') : 'every layout'}`);
       }
     } catch (e) {
       errs.push(`npcs.json is not valid JSON: ${e.message}`);
