@@ -10,6 +10,7 @@ const MAX_SLOPE = 0.6; // steeper ground than this can't be walked up (jump inst
 export function resolveCollisions(p, { segments, boxes }) {
   for (let iter = 0; iter < 3; iter++) {
     for (const s of segments) {
+      if (s.top !== undefined && (p.y ?? 0) > s.top - 0.35) continue; // jumping over a low fence
       const dx = s.bx - s.ax, dz = s.bz - s.az;
       const t = clamp(((p.x - s.ax) * dx + (p.z - s.az) * dz) / (dx * dx + dz * dz), 0, 1);
       const cx = s.ax + dx * t, cz = s.az + dz * t;

@@ -57,7 +57,12 @@ const builders = {
   },
 
   rug({ radius = 1.2, color = '#ffafcc' }, g) {
-    part(g, new THREE.CylinderGeometry(radius, radius, 0.02, 40), color, 0, 0.035, 0, false);
+    // flat disc; polygon offset keeps it from flickering against the ground or paths
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, 0.02, 48),
+      new THREE.MeshLambertMaterial({ color, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }));
+    m.position.y = 0.035;
+    m.receiveShadow = true;
+    g.add(m);
     return null;
   },
 
@@ -234,7 +239,7 @@ const builders = {
       cyl(g, 0, 1.1, 1.4, '#2d6a4f', 0, 1.9, 0, 12);
       cyl(g, 0, 0.85, 1.2, '#40916c', 0, 2.6, 0, 12);
       cyl(g, 0, 0.6, 1.0, '#52b788', 0, 3.2, 0, 12);
-      return [0.5, 0.5];
+      return { size: [0.5, 0.5], climb: { y: 3.2, reach: 1.25 } };
     }
     ball(g, 1.0, '#4caf50', 0, 2.2, 0);
     ball(g, 0.7, '#66bb6a', 0.5, 2.7, 0.2);
@@ -245,7 +250,7 @@ const builders = {
         ball(g, 0.09, fruit, Math.cos(a) * 0.95, y, Math.sin(a) * 0.95);
       }
     }
-    return [0.5, 0.5];
+    return { size: [0.5, 0.5], climb: { y: 3.3, reach: 1.25 } }; // sit on top of the tree
   },
 
   // Flat things you walk over: exercise mat, gravel, a patch of lawn or concrete
@@ -349,10 +354,12 @@ const builders = {
   },
 
   // ---------- playground equipment ----------
-  // Builders may return { size, colliders: [{ x, z, w, d, top, spin }], terrain }
+  // Builders may return { size, colliders: [{ x, z, w, d, top, spin }], terrain, climb, slides, swings }
   // (local, metres) when an item has several solid parts; `size` is then just its
   // overall footprint. `terrain(lx, lz)` gives the ground height for hills/steps;
-  // `spin: true` marks a part that turns while you stand on it.
+  // `spin: true` marks a part that turns while you stand on it. `climb` = { y, reach,
+  // offset }: you can climb it and sit at height y. `slides` = [{ x0, z0, y0, x1, z1, y1 }]
+  // top -> bottom. `swings` = [{ x, z, top, length, pivot }]: seats you can swing on.
 
   // Swing frame of natural wood logs. seats: a count, or a list of
   // 'belt' | 'bucket' | 'adaptive' (high-back moulded seat with a harness)
@@ -360,41 +367,53 @@ const builders = {
     const [w, d] = size;
     aFrame(g, w, d, 2.4, color);
     const types = Array.isArray(seats) ? seats : Array.from({ length: seats }, (_, i) => (i === seats - 1 ? 'bucket' : 'belt'));
+    const swings = [];
     types.forEach((type, i) => {
       const x = -w / 2 + ((i + 0.5) * w) / types.length;
       const seatY = type === 'adaptive' ? 0.55 : 0.5;
-      for (const dx of [-0.22, 0.22]) cyl(g, 0.012, 0.012, 2.4 - seatY, '#888888', x + dx, (2.4 + seatY) / 2, 0, 6);
+      const L = 2.4 - seatY;
+      // everything below the bar hangs from a pivot so the seat can swing
+      const pivot = new THREE.Group();
+      pivot.position.set(x, 2.4, 0);
+      g.add(pivot);
+      for (const dx of [-0.22, 0.22]) cyl(pivot, 0.012, 0.012, L, '#888888', dx, -L / 2, 0, 6);
       if (type === 'adaptive') {
         const green = '#2d6a4f';
-        box(g, 0.46, 0.08, 0.42, green, x, seatY, 0.02); // seat
-        box(g, 0.46, 0.6, 0.08, green, x, seatY + 0.3, -0.18); // tall back
-        for (const sx of [-1, 1]) box(g, 0.06, 0.32, 0.36, green, x + sx * 0.22, seatY + 0.16, 0); // side wings
-        box(g, 0.08, 0.3, 0.05, '#adb5bd', x, seatY + 0.15, 0.2); // harness
+        box(pivot, 0.46, 0.08, 0.42, green, 0, -L, 0.02); // seat
+        box(pivot, 0.46, 0.6, 0.08, green, 0, -L + 0.3, -0.18); // tall back
+        for (const sx of [-1, 1]) box(pivot, 0.06, 0.32, 0.36, green, sx * 0.22, -L + 0.16, 0); // side wings
+        box(pivot, 0.08, 0.3, 0.05, '#adb5bd', 0, -L + 0.15, 0.2); // harness
       } else if (type === 'bucket') {
-        box(g, 0.5, 0.25, 0.4, '#222222', x, seatY + 0.1, 0);
+        box(pivot, 0.5, 0.25, 0.4, '#222222', 0, -L + 0.1, 0);
       } else {
-        box(g, 0.5, 0.03, 0.18, '#222222', x, seatY, 0);
+        box(pivot, 0.5, 0.03, 0.18, '#222222', 0, -L, 0);
       }
+      swings.push({ x, z: 0, top: 2.4, length: L, pivot });
     });
-    return { size, colliders: postColliders(w, d) };
+    return { size, colliders: postColliders(w, d), swings };
   },
 
   nestSwing({ size = [6, 2.4], nests = 2, color = '#ff9f1c' }, g) {
     const [w, d] = size;
     aFrame(g, w, d, 2.6, color);
+    const swings = [];
     for (let i = 0; i < nests; i++) {
       const x = -w / 2 + ((i + 0.5) * w) / nests;
-      const ring = part(g, new THREE.TorusGeometry(0.55, 0.08, 10, 28), '#3a86ff', x, 0.55, 0);
+      const pivot = new THREE.Group();
+      pivot.position.set(x, 2.6, 0);
+      g.add(pivot);
+      const ring = part(pivot, new THREE.TorusGeometry(0.55, 0.08, 10, 28), '#3a86ff', 0, -2.05, 0);
       ring.rotation.x = Math.PI / 2;
-      part(g, new THREE.CylinderGeometry(0.52, 0.52, 0.03, 24), '#22223b', x, 0.53, 0);
+      part(pivot, new THREE.CylinderGeometry(0.52, 0.52, 0.03, 24), '#22223b', 0, -2.07, 0);
       for (let k = 0; k < 4; k++) {
         const a = (k * Math.PI) / 2 + Math.PI / 4;
-        const rope = cyl(g, 0.012, 0.012, 2.1, '#888888', x + Math.cos(a) * 0.25, 1.6, Math.sin(a) * 0.25, 6);
+        const rope = cyl(pivot, 0.012, 0.012, 2.1, '#888888', Math.cos(a) * 0.25, -1.0, Math.sin(a) * 0.25, 6);
         rope.rotation.z = Math.cos(a) * 0.15;
         rope.rotation.x = -Math.sin(a) * 0.15;
       }
+      swings.push({ x, z: 0, top: 2.6, length: 2.0, pivot });
     }
-    return { size, colliders: postColliders(w, d) };
+    return { size, colliders: postColliders(w, d), swings };
   },
 
   // Globe spinner: a ball of curved ribs and rope net around a centre pole.
@@ -445,7 +464,11 @@ const builders = {
       const ring = part(g, new THREE.TorusGeometry(r * (1 - h / height), 0.03, 6, 32), color, 0, h, 0);
       ring.rotation.x = Math.PI / 2;
     }
-    return { size, colliders: [{ x: 0, z: 0, w: 0.4, d: 0.4, top: height + 0.1 }] };
+    return {
+      size,
+      colliders: [{ x: 0, z: 0, w: 0.4, d: 0.4, top: height + 0.1 }],
+      climb: { y: height * 0.72, reach: r + 0.3, offset: 0.55 }, // climb the ropes, sit near the top beside the mast
+    };
   },
 
   // Slide Mountain: a real grassy hill. Front (+z): grass slope to walk up and slide
@@ -455,7 +478,7 @@ const builders = {
   slideMountain({ size = [16, 17], height = 2.2, color = '#74c365' }, g) {
     const Ht = height, [w, d] = size;
     const STEP_W = 0.88, STEPS = 5, EAST = 2.2 + STEP_W * STEPS;
-    const STAIRS_Z = [-8, -4.85]; // north third of the east side
+    const STAIRS_Z = [-8, -5.65]; // north end of the east side
     const steep = (dx) => Math.max(0, Ht * (1 - dx / 3)); // too steep to walk up
     const h = (x, z) => {
       if (z >= -8 && z <= -3 && x >= -7 && x <= 2.2) return Ht; // raised deck behind the top
@@ -491,13 +514,15 @@ const builders = {
 
     // Round climbing stones up the middle section: jump from one to the next
     const colliders = [];
-    [[5.5, -3.8, 0.5], [4.7, -2.6, 0.95], [3.9, -3.7, 1.45], [3.05, -2.7, 1.9], [2.45, -3.6, 2.2]].forEach(([x, z, top], i) => {
+    [[5.5, -3.8, 0.5], [4.7, -2.75, 0.95], [3.9, -3.75, 1.45], [3.05, -2.8, 1.9], [2.45, -3.6, 2.2]].forEach(([x, z, top], i) => {
       rockMesh(g, 0.95, top, 0.95, '#bdb6a8', x, z, i + 3);
       colliders.push({ x, z, w: 0.85, d: 0.85, top });
     });
 
-    // Slides: two down the front slope, one down the east side
+    // Slides: two down the front slope, two down the east side
+    const slides = [];
     const slideAt = (x0, z0, x1, z1, c) => {
+      slides.push({ x0, z0, y0: Ht, x1, z1, y1: 0.3 });
       const y0 = Ht + 0.05, y1 = 0.3;
       const run = Math.hypot(x1 - x0, z1 - z0), len = Math.hypot(run, y1 - y0);
       const pivot = new THREE.Group();
@@ -519,6 +544,7 @@ const builders = {
     slideAt(-1.7, 1.5, -1.7, 7.9, '#a7c957');
     slideAt(1.7, 1.5, 1.7, 7.9, '#a7c957');
     slideAt(2.2, -0.1, 7.6, -0.1, '#4cc9f0');
+    slideAt(2.2, -5.0, 7.6, -5.0, '#c0c4c8'); // silver, between the stairs and the climbing stones
 
     // Shade sails on tall posts
     const sailMat = new THREE.MeshLambertMaterial({ color: '#c8b48e', side: THREE.DoubleSide });
@@ -544,6 +570,7 @@ const builders = {
     return {
       size,
       terrain: h,
+      slides,
       colliders: [...colliders, ...posts.map(([px, pz]) => ({ x: px, z: pz, w: 0.25, d: 0.25, top: 6 }))],
     };
   },
@@ -600,12 +627,41 @@ const builders = {
     const sideLen = d / 2 - open;
     return {
       size: [w + 2 * 2.8, d],
+      slides: [-0.3, 0.3].map((z) => ({ x0: x0 + 0.1, z0: z, y0: deck, x1, z1: z, y1 })),
       colliders: [
         { x: 0, z: 0, w, d, top: deck },
         { x: 0, z: -d / 2 + t / 2, w, d: t, top: deck + 2.6 },
         ...[-1, 1].flatMap((sx) => [-1, 1].map((sz) => ({ x: sx * (w / 2 - t / 2), z: sz * (open + sideLen / 2), w: t, d: sideLen, top }))),
         ...steps.map((top2, i) => ({ x: w / 2 + 0.35 * (steps.length - i) - 0.175, z: 0, w: 0.35, d: 1.0, top: top2 })),
       ],
+    };
+  },
+
+  // Outdoor chess table: checkerboard top on a pedestal, a few pieces, four stools
+  chessTable({ color = '#8d99ae' }, g) {
+    const top = 0.76, sz = 0.8;
+    cyl(g, 0.12, 0.2, top, color, 0, top / 2, 0, 12);
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 128;
+    const c2 = canvas.getContext('2d');
+    for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++) {
+      c2.fillStyle = (i + j) % 2 ? '#3d3d3d' : '#f1ede4';
+      c2.fillRect(i * 16, j * 16, 16, 16);
+    }
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    const board = new THREE.Mesh(new THREE.BoxGeometry(sz, 0.05, sz),
+      [mat(color), mat(color), new THREE.MeshLambertMaterial({ map: tex }), mat(color), mat(color), mat(color)]);
+    board.position.y = top;
+    board.castShadow = board.receiveShadow = true;
+    g.add(board);
+    [[-0.25, -0.3, '#ffffff'], [0.05, -0.25, '#ffffff'], [-0.15, 0.25, '#222222'], [0.25, 0.3, '#222222'], [0.15, -0.05, '#ffffff']]
+      .forEach(([x, z, c]) => cyl(g, 0.025, 0.035, 0.08, c, x, top + 0.065, z, 10));
+    const stools = [[0, 0.75], [0, -0.75], [0.75, 0], [-0.75, 0]];
+    for (const [x, z] of stools) cyl(g, 0.18, 0.15, 0.45, color, x, 0.225, z, 14);
+    return {
+      size: [1.9, 1.9],
+      colliders: [{ x: 0, z: 0, w: sz, d: sz, top: top + 0.025 }, ...stools.map(([x, z]) => ({ x, z, w: 0.34, d: 0.34, top: 0.45 }))],
     };
   },
 
@@ -667,7 +723,6 @@ const BOUNCY = new Set(['trampoline']);
 
 // Where people sit inside an SUV, in the car's local frame (driver on the +x side)
 export const BIKE_SEAT = { y: 0.6, z: -0.1 }; // rider's hips, in the bike's local frame
-export const TREE_PERCH = { round: 3.3, pine: 3.2 }; // where a climber sits, on top of the tree
 
 export const SUV_SEATS = [
   { x: 0.4, z: 0.12, door: { x: 1.45, z: 0.12 } },
@@ -682,10 +737,10 @@ export function buildFurniture(item) {
   }
   const object = new THREE.Group();
   let size = builder(item, object);
-  let colliders = null, terrain = null;
-  if (size && !Array.isArray(size)) ({ size, colliders = null, terrain = null } = size);
+  let colliders = null, terrain = null, climb = null, slides = null, swings = null;
+  if (size && !Array.isArray(size)) ({ size, colliders = null, terrain = null, climb = null, slides = null, swings = null } = size);
   const top = typeof TOPS[item.type] === 'function' ? TOPS[item.type](item) : TOPS[item.type] ?? 1;
-  return { object, size, colliders, terrain, top, bouncy: BOUNCY.has(item.type) };
+  return { object, size, colliders, terrain, climb, slides, swings, top, bouncy: BOUNCY.has(item.type) };
 }
 
 // A round, irregular rock from y = 0 to `height` (bumpy sphere, same shape for the same seed)

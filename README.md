@@ -28,11 +28,13 @@ Options: `--layout office` opens straight into a layout, `--no-browser` just ser
 |---|---|---|
 | Walk forward | ↑ (or W), hold | ▲ button, hold |
 | Walk back toward the camera (see her face) | ↓ (or S), hold | ▼ button, hold |
-| Turn 45° left / right | ← / → (or A / D), one tap = 45° | ↰ / ↱ buttons |
+| Turn 30° left / right | ← / → (or A / D), one tap = 30° | ↰ / ↱ buttons |
 | Walk + steer smoothly | drag on the view with the mouse | drag on the view like a joystick: up = forward, down = back, left/right = steer |
 | Jump | Space | ⤒ button |
 | Get on / off the bike (stand next to it) | Space | ⤒ button |
-| Climb a tree / climb down (stand next to it) | Space | ⤒ button |
+| Climb a tree or the rope climber / climb down (stand next to it) | Space | ⤒ button |
+| Go down a slide (stand at its top) | Space | ⤒ button |
+| Sit on a swing / hop off (stand by the seat) | Space | ⤒ button |
 | Run (2.6× faster) | double-tap ↑ and hold (or hold Shift) | double-tap ▲ and hold, or tap the view then drag |
 | Map view (top-down overview) | M | 🗺️ button or tap the minimap |
 | …in the map view: move up / down / left / right on the map | arrow keys (she turns that way, then walks; two keys = diagonal) | hold ▲ ▼ ↰ ↱, or drag in any direction |

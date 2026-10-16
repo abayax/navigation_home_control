@@ -19,7 +19,7 @@ const SIT_TYPES = new Set(['chair', 'sofa', 'bed', 'bench']);
 const STAND_TYPES = {
   counter: 0.35, fridge: 0.4, sink: 0.35, bookshelf: 0.45, desk: 0.45, piano: 0.45, tv: 1.6,
   // playground: grown-ups watching
-  swingSet: 1.2, nestSwing: 1.2, fountain: 0.35, spinner: 0.6, slideMountain: 0.8, ropeClimber: 0.5, playHouse: 0.8, picnicTable: 0.45,
+  swingSet: 1.2, nestSwing: 1.2, fountain: 0.35, chessTable: 1.0, spinner: 0.6, slideMountain: 0.8, ropeClimber: 0.5, playHouse: 0.8, picnicTable: 0.45,
 };
 
 const rand = (a, b) => a + Math.random() * (b - a);

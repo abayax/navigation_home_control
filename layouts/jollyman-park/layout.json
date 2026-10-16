@@ -2,7 +2,7 @@
   "name": "Jollyman Park Playground",
   "units": "meters. x grows to the east, z grows to the south. rect = [x0, z0, x1, z1]",
   "source": "source.png",
-  "notes": "Traced from the playground's concept sign (no measurements). Assumed ~70 x 55 m (about an acre) with a 14 m strip of park lawn around it. Zones are rectangles approximating the sign's curved areas; the white paths are smooth curves through traced points. Parking lot left out. Restroom outside the playground fence (east park strip): two 4 x 3.5 m bathrooms (toilet, sink, diaper station), doors facing west with a fountain between them; second fountain by the west entrance. Slide Mountain from photos: 2.2 m hill with a grass slope and two slides facing the gathering area; east side (facing the restroom) has, from left to right, a slide, climbing stones and stone stairs; raised '5-12' deck behind at the same height; shade sails. Blue rope climber with two benches facing it; big stone in the sand pit. Forest House: A-frame on a 1.2 m deck with stairs and a double slide. Globe spinner; swing set by the spinner has two adaptive seats.",
+  "notes": "Traced from the playground's concept sign (no measurements). Assumed ~70 x 55 m (about an acre) with a 14 m strip of park lawn around it. Zones are rectangles approximating the sign's curved areas; the white paths are smooth curves through traced points. Parking lot left out. Restroom outside the playground fence (east park strip): two 4 x 3.5 m bathrooms (toilet, sink, diaper station), doors facing west with a fountain between them; second fountain by the west entrance. Slide Mountain from photos: 2.2 m hill with a grass slope and two slides facing the gathering area; east side (facing the restroom) has, from left to right, a slide, climbing stones and stone stairs; raised '5-12' deck behind at the same height; shade sails. Blue rope climber with two benches facing it; big stone in the sand pit; three chess tables in the gathering area; white sitting stones around the Forest House; a bike by the restroom. Inner playground fence can be jumped over. Forest House: A-frame on a 1.2 m deck with stairs and a double slide. Globe spinner; swing set by the spinner has two adaptive seats.",
   "spawn": {
     "at": [
       47.0,
@@ -637,6 +637,7 @@
         63.6,
         56.6
       ],
+      "rot": 180,
       "size": [
         4.4,
         1.8
@@ -652,6 +653,7 @@
         57.0,
         61.6
       ],
+      "rot": 180,
       "size": [
         6,
         1.8
@@ -837,6 +839,91 @@
         0.4
       ],
       "rot": 180
+    },
+    {
+      "type": "chessTable",
+      "at": [
+        53.1,
+        43.5
+      ]
+    },
+    {
+      "type": "chessTable",
+      "at": [
+        56.0,
+        43.7
+      ]
+    },
+    {
+      "type": "chessTable",
+      "at": [
+        54.5,
+        46.6
+      ]
+    },
+    {
+      "type": "boulder",
+      "at": [
+        43.9,
+        46.7
+      ],
+      "height": 0.42,
+      "size": [
+        1.1,
+        0.8
+      ],
+      "color": "#e9e6dd",
+      "seed": 89
+    },
+    {
+      "type": "boulder",
+      "at": [
+        37.3,
+        47.1
+      ],
+      "height": 0.42,
+      "size": [
+        1.0,
+        0.8
+      ],
+      "color": "#e9e6dd",
+      "seed": 69
+    },
+    {
+      "type": "boulder",
+      "at": [
+        37.2,
+        52.4
+      ],
+      "height": 0.42,
+      "size": [
+        1.2,
+        0.85
+      ],
+      "color": "#e9e6dd",
+      "seed": 69
+    },
+    {
+      "type": "boulder",
+      "at": [
+        44.6,
+        52.3
+      ],
+      "height": 0.42,
+      "size": [
+        1.0,
+        0.8
+      ],
+      "color": "#e9e6dd",
+      "seed": 91
+    },
+    {
+      "type": "bike",
+      "at": [
+        95.0,
+        23.0
+      ],
+      "rot": 90
     },
     {
       "type": "boulder",

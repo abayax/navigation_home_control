@@ -104,8 +104,9 @@ add("ropeClimber", P(280, 245), size=[6, 6], height=4.5, color="#3a86ff")
 add("slideMountain", P(455, 190), size=[16, 17], height=2.2)
 add("playHouse", P(295, 385), rot=180, size=[3.2, 2.8])
 add("spinner", P(545, 340), radius=1.3)
-add("swingSet", L(49.6, 42.6), size=[4.4, 1.8], seats=["adaptive", "adaptive"])   # next to the spinner
-add("swingSet", L(43.0, 47.6), size=[6, 1.8], seats=["belt", "belt", "bucket"])
+# swing seats face north, toward Slide Mountain
+add("swingSet", L(49.6, 42.6), rot=180, size=[4.4, 1.8], seats=["adaptive", "adaptive"])   # next to the spinner
+add("swingSet", L(43.0, 47.6), rot=180, size=[6, 1.8], seats=["belt", "belt", "bucket"])
 
 # Restroom fixtures: toilet, sink and diaper station in each bathroom; fountain out front
 add("toilet", L(82.45, 1.8), rot=-90)
@@ -123,6 +124,17 @@ for x, z in [(60, 27.2), (65.5, 27.6), (62.5, 33.5)]:
     add("picnicTable", L(x, z), size=[1.8, 0.8])
     add("bench", L(x, z - 0.75), size=[1.8, 0.4])
     add("bench", L(x, z + 0.75), size=[1.8, 0.4], rot=180)
+
+# Chess tables in the gathering area
+for x, z in [(39.1, 29.5), (42.0, 29.7), (40.5, 32.6)]:
+    add("chessTable", L(x, z))
+
+# White sitting stones around the Forest House (clear of its stairs and slide)
+for (x, z), sz in [((29.9, 32.7), [1.1, 0.8]), ((23.3, 33.1), [1.0, 0.8]), ((23.2, 38.4), [1.2, 0.85]), ((30.6, 38.3), [1.0, 0.8])]:
+    add("boulder", L(x, z), height=0.42, size=sz, color="#e9e6dd", seed=int(x * 3))
+
+# Bike parked against the restroom's south wall
+add("bike", L(81, 9.0), rot=90)
 
 # Big round stone in the middle of the sand pit
 add("boulder", P(118, 378), size=[2.2, 1.9], height=0.9, color="#cbb89a", seed=5)
@@ -187,7 +199,8 @@ layout = {
               "by the west entrance. Slide Mountain from photos: 2.2 m hill with a grass slope and two slides facing the "
               "gathering area; east side (facing the restroom) has, from left to right, a slide, climbing stones and "
               "stone stairs; raised '5-12' deck behind at the same height; shade sails. Blue rope climber with two "
-              "benches facing it; big stone in the sand pit. Forest House: A-frame on a 1.2 m deck with stairs "
+              "benches facing it; big stone in the sand pit; three chess tables in the gathering area; white sitting "
+              "stones around the Forest House; a bike by the restroom. Inner playground fence can be jumped over. Forest House: A-frame on a 1.2 m deck with stairs "
               "and a double slide. Globe spinner; swing set by the spinner has two adaptive seats."),
     "spawn": {"at": L(33, 28.5), "facing": "north"},
     "exteriorWall": "#c7c9c4",

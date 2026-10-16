@@ -28,7 +28,7 @@ Turn a floor plan image or PDF into `layouts/<id>/layout.json`, register it, and
 - Work out the overall outer size first, then place rooms row by row. Check that the sums of room widths match the outer dimensions.
 - A garage (or any indoor room where riding a bike is OK) gets `"allowBike": true`; bikes can always go outdoors.
 - Outdoor areas (yard, patio, balcony, driveway, sidewalk) get `"outdoor": true`. Their edges become a fence, except where they touch a house wall or **another outdoor area** (a lawn next to a driveway stays open).
-- A fence that isn't on an outdoor area's outer edge (e.g. a backyard fence between the house and the side fence) goes in `"fences": [{ "from": [x, z], "to": [x, z] }]`. Gates in it are ordinary doors placed on that line.
+- A fence that isn't on an outdoor area's outer edge (e.g. a backyard fence between the house and the side fence) goes in `"fences": [{ "from": [x, z], "to": [x, z] }]`. Gates in it are ordinary doors placed on that line. These inner fences can be jumped over; outer fences can't.
 - Curved walkways go in `"paths": [{ "points": [[x, z], ...], "width": 2, "color": "#hex", "closed": false }]`. They are drawn as smooth flat ribbons you can walk on.
 - Floor patterns also include `rubber` (playground surface) and `sand`.
 - Concept maps / signs without measurements: agree an overall size with the user, then trace positions from pixels with a helper (see `layouts/jollyman-park/generate.py`).
@@ -80,6 +80,7 @@ Turn a floor plan image or PDF into `layouts/<id>/layout.json`, register it, and
 | ropeClimber | [6, 6] | rope pyramid, `height` 4.5; only the mast is solid |
 | slideMountain | [16, 17], `height` 2.2 | shaped hill: grass slope + 2 slides at +z; at +x a slide, climbing stones and stone stairs; steep grass at -x; raised deck at -z; shade sails |
 | playHouse | [3.2, 2.8] | A-frame playhouse on a 1.2 m deck, open front at +z, stairs at +x, double slide at -x |
+| chessTable | [1.9, 1.9] | outdoor chess table with four stools |
 | fountain / diaperStation | [0.75, 0.45] / [0.9, 0.5] | drinking fountain; wall-mounted baby changing table (front +z) |
 | picnicTable / bench | [1.8, 0.8] / [1.6, 0.45] | benches face +z; NPCs sit on benches |
 | boulder | [1.2, 1] | round irregular rock you can climb, `height`, `seed` changes its shape |

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { buildHouse, roomAt } from './house.js';
 import { createKid, HIP_HEIGHT } from './person.js';
-import { BIKE_SEAT, TREE_PERCH } from './furniture.js';
+import { BIKE_SEAT } from './furniture.js';
 import { Input } from './input.js';
 import { resolveCollisions, cameraDistance, lineBlocked, terrainBlocks, terrainHeightAt, terrainSlope } from './collision.js';
 import { stepVertical } from './physics.js';
@@ -15,8 +15,8 @@ const WALK_SPEED = 2.4; // m/s
 const BACK_SPEED = 1.5;
 const RUN_FACTOR = 2.6;
 const RUN_ANIM_SPEED = WALK_SPEED * 1.15; // running: same leg rhythm as walking, longer stride
-const TURN_STEP = Math.PI / 4; // one tap of left/right turns 45° (taps add up)
-const TURN_SPEED = Math.PI * 1.2; // rad/s -> a 45° turn takes ~0.2 s
+const TURN_STEP = Math.PI / 6; // one tap of left/right turns 30° (taps add up)
+const TURN_SPEED = Math.PI * 1.2; // rad/s -> a 30° turn takes ~0.14 s
 const STEER_RATE = 2.4; // rad/s at full drag sideways
 const CAM_DIST = 3.4;
 const CAM_HEIGHT = 1.9; // stays below door lintels (2.1 m)
@@ -24,11 +24,13 @@ const BIKE_SPEED = 3.6;
 const BIKE_BACK_SPEED = 1.2;
 const BIKE_RADIUS = 0.3;
 const MOUNT_DISTANCE = 1.1; // how close to a bike you must be to hop on
-const TREE_DISTANCE = 1.0; // how close to a trunk you must be to climb
 const CLIMB_TIME = 0.9; // seconds to climb up or down
 const SLIDE_MAX = 3.2; // m/s sliding down a grass slope
 const SLIDE_DELAY = 0.25; // stand still this long on a slope before sliding
 const SPIN_MAX = 1.6; // rad/s for a spinner you stand on
+const SLIDE_RIDE_SPEED = 3.4; // m/s going down a slide
+const SWING_RATE = 2.4; // rad/s of the swing's back-and-forth
+const SWING_MAX = 0.65; // biggest swing angle (rad)
 const FACING = { north: Math.PI, south: 0, east: Math.PI / 2, west: -Math.PI / 2 };
 
 const { layouts, current, data } = await loadLayout();
@@ -62,6 +64,7 @@ const house = buildHouse(data);
 scene.add(house.group);
 
 const kid = createKid();
+kid.group.rotation.order = 'YXZ'; // so leaning on a swing tilts around her own left-right axis
 scene.add(kid.group);
 
 // ---------- family NPCs ----------
@@ -156,25 +159,100 @@ function dismount() {
   }
 }
 
-// ---------- climbing trees ----------
-let climb = null; // { tree, phase: 'up' | 'top' | 'down', t, from, top }
+// ---------- climbing (trees, rope climber) ----------
+let climb = null; // { spot, phase: 'up' | 'top' | 'down', t, from, top }
 
-function nearestTree() {
-  let best = null, bestD = TREE_DISTANCE + player.radius;
-  for (const b of boxes) {
-    if (b.item?.type !== 'tree') continue;
-    const cx = (b.minX + b.maxX) / 2, cz = (b.minZ + b.maxZ) / 2;
-    const d = Math.hypot(cx - player.x, cz - player.z);
-    if (d < bestD && !lineBlocked(player.x, player.z, cx, cz, house.colliders.segments)) { best = b; bestD = d; }
+function nearestClimb() {
+  let best = null, bestD = Infinity;
+  for (const c of house.climbs) {
+    const d = Math.hypot(c.x - player.x, c.z - player.z);
+    if (d < c.reach + player.radius && d < bestD && !lineBlocked(player.x, player.z, c.x, c.z, house.colliders.segments)) {
+      best = c;
+      bestD = d;
+    }
   }
   return best;
 }
 
-function startClimb(tree) {
-  const top = { x: (tree.minX + tree.maxX) / 2, z: (tree.minZ + tree.maxZ) / 2, y: TREE_PERCH[tree.item.kind ?? 'round'] ?? TREE_PERCH.round };
-  climb = { tree, phase: 'up', t: 0, from: { x: player.x, z: player.z }, top };
+function startClimb(spot) {
+  // sit on top (trees), or beside the mast on the side you climbed from (rope climber)
+  const dx = player.x - spot.x, dz = player.z - spot.z, d = Math.hypot(dx, dz) || 1;
+  const top = { x: spot.x + (dx / d) * spot.offset, z: spot.z + (dz / d) * spot.offset, y: spot.y };
+  climb = { spot, phase: 'up', t: 0, from: { x: player.x, z: player.z }, top };
   player.vy = 0;
   faceBack = false;
+}
+
+// ---------- slides and swings ----------
+let ride = null; // { kind: 'slide', s, t, len } | { kind: 'swing', s, t }
+
+function nearestSlide() {
+  let best = null, bestD = 0.9;
+  for (const sl of house.slides) {
+    const d = Math.hypot(sl.x0 - player.x, sl.z0 - player.z);
+    if (d < bestD && Math.abs(player.y - sl.y0) < 0.45) { best = sl; bestD = d; }
+  }
+  return best;
+}
+
+function nearestSwing() {
+  let best = null, bestD = 0.9;
+  for (const sw of house.swings) {
+    const d = Math.hypot(sw.x - player.x, sw.z - player.z);
+    if (d < bestD && player.y < 0.1) { best = sw; bestD = d; }
+  }
+  return best;
+}
+
+// Runs a slide or swing ride for this frame (the kid is carried, not walking)
+function updateRide(dt) {
+  if (ride.kind === 'slide') {
+    const sl = ride.s;
+    ride.t = Math.min(1, ride.t + (dt * SLIDE_RIDE_SPEED) / ride.len);
+    const k = ride.t;
+    player.x = sl.x0 + (sl.x1 - sl.x0) * k;
+    player.z = sl.z0 + (sl.z1 - sl.z0) * k;
+    player.y = sl.y0 + (sl.y1 - sl.y0) * k;
+    const yaw = Math.atan2(sl.x1 - sl.x0, sl.z1 - sl.z0);
+    const y = player.y + 0.06 - HIP_HEIGHT;
+    kid.update(dt, 0, player.x, player.z, yaw, y, y, 1);
+    if (k >= 1) {
+      // shoot off the end and land
+      player.x += Math.sin(yaw) * 0.55;
+      player.z += Math.cos(yaw) * 0.55;
+      player.yaw = player.targetYaw = bodyYaw = yaw;
+      player.vy = 0;
+      player.grounded = false;
+      player.support = null;
+      ride = null;
+    }
+    return;
+  }
+  // swing
+  const sw = ride.s;
+  const fx = Math.sin(sw.yaw), fz = Math.cos(sw.yaw);
+  if (input.consumeJump()) {
+    sw.pivot.rotation.x = 0;
+    kid.group.rotation.x = 0;
+    player.x = sw.x + fx * 0.75;
+    player.z = sw.z + fz * 0.75;
+    player.y = 0;
+    player.vy = 0;
+    player.grounded = true;
+    player.yaw = player.targetYaw = bodyYaw = sw.yaw;
+    resolveCollisions(player, house.colliders);
+    ride = null;
+    return;
+  }
+  ride.t += dt;
+  const a = Math.min(SWING_MAX, ride.t * 0.18) * Math.sin(SWING_RATE * ride.t);
+  sw.pivot.rotation.x = -a;
+  player.x = sw.x + fx * sw.length * Math.sin(a);
+  player.z = sw.z + fz * sw.length * Math.sin(a);
+  player.y = sw.top - sw.length * Math.cos(a);
+  const y = player.y + 0.04 - HIP_HEIGHT;
+  kid.update(dt, 0, player.x, player.z, sw.yaw, y, y, 1);
+  kid.group.rotation.x = -a; // lean with the swing
 }
 
 // Moves the kid along the climb; returns the kid's pose for this frame
@@ -295,13 +373,23 @@ function update(dt) {
   const touch = document.body.classList.contains('touch');
   const jumpKey = touch ? 'Tap ⤒' : 'Press Space';
 
-  // Up a tree: only turning works until you climb down
+  // On a slide or a swing: the ride carries her
+  if (ride) {
+    updateRide(dt);
+    showPrompt(ride?.kind === 'swing' ? `${jumpKey} to hop off` : '');
+    for (const npc of npcs) npc.update(dt, player, npcs.filter((o) => o !== npc));
+    updateCamera(dt);
+    hud.update(player.x, player.z, player.yaw, npcs);
+    return;
+  }
+
+  // Up a tree or the rope climber: only turning works until you climb down
   if (climb) {
     const { sit } = updateClimb(dt);
     if (climb) {
       const y = sit ? player.y - HIP_HEIGHT : player.y;
       kid.update(dt, 0, player.x, player.z, player.yaw, y, sit ? y : 0, sit);
-      showPrompt(climb.phase === 'top' ? `🌳 ${jumpKey} to climb down` : '');
+      showPrompt(climb.phase === 'top' ? `${climb.spot.type === 'tree' ? '🌳' : '🧗'} ${jumpKey} to climb down` : '');
       for (const npc of npcs) npc.update(dt, player, npcs.filter((o) => o !== npc));
       updateCamera(dt);
       hud.update(player.x, player.z, player.yaw, npcs);
@@ -309,15 +397,26 @@ function update(dt) {
     }
   }
 
-  // Hop on / off a bike, or climb a tree, with jump
+  // Jump also starts things: a slide, a swing, the bike, climbing
   if (riding) {
     if (input.consumeJump()) dismount();
+  } else if (player.grounded && input.jumpQueued && nearestSlide()) {
+    input.consumeJump();
+    const sl = nearestSlide();
+    ride = { kind: 'slide', s: sl, t: 0, len: Math.hypot(sl.x1 - sl.x0, sl.y1 - sl.y0, sl.z1 - sl.z0) };
+    faceBack = false;
+    return;
+  } else if (player.grounded && player.y < 0.05 && input.jumpQueued && nearestSwing()) {
+    input.consumeJump();
+    ride = { kind: 'swing', s: nearestSwing(), t: 0 };
+    faceBack = false;
+    return;
   } else if (player.grounded && player.y < 0.05 && input.jumpQueued && nearestBike()) {
     input.consumeJump();
     mount(nearestBike());
-  } else if (player.grounded && player.y < 0.05 && input.jumpQueued && nearestTree()) {
+  } else if (player.grounded && player.y < 0.05 && input.jumpQueued && nearestClimb()) {
     input.consumeJump();
-    startClimb(nearestTree());
+    startClimb(nearestClimb());
     return;
   }
 
@@ -415,7 +514,12 @@ function update(dt) {
     if (sliding) kid.update(dt, 0, player.x, player.z, bodyYaw, groundY + 0.08 - HIP_HEIGHT, groundY + 0.08 - HIP_HEIGHT, 1);
     else kid.update(dt, animSpeed, player.x, player.z, bodyYaw, player.y, groundY);
     const onGround = player.grounded && player.y < 0.05;
-    showPrompt(onGround && nearestBike() ? `🚲 ${jumpKey} to ride` : onGround && nearestTree() ? `🌳 ${jumpKey} to climb` : '');
+    const climbSpot = onGround ? nearestClimb() : null;
+    showPrompt(
+      player.grounded && nearestSlide() ? `🛝 ${jumpKey} to slide`
+        : onGround && nearestSwing() ? `${jumpKey} to swing`
+          : onGround && nearestBike() ? `🚲 ${jumpKey} to ride`
+            : climbSpot ? `${climbSpot.type === 'tree' ? '🌳' : '🧗'} ${jumpKey} to climb` : '');
   }
 
   for (const npc of npcs) npc.update(dt, player, npcs.filter((o) => o !== npc));

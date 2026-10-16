@@ -162,14 +162,15 @@ function pathRibbon({ points, width = 2, color = '#efe9dc', closed = false }) {
     pos.push(p.x + nx, 0.027, p.z + nz, p.x - nx, 0.027, p.z - nz);
     if (i > 0) {
       const v = i * 2;
-      idx.push(v - 2, v - 1, v, v - 1, v + 1, v);
+      idx.push(v - 2, v, v - 1, v - 1, v, v + 1); // counter-clockwise seen from above = faces up
     }
   });
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('normal', new THREE.Float32BufferAttribute(pos.map((_, k) => (k % 3 === 1 ? 1 : 0)), 3));
   geo.setIndex(idx);
-  geo.computeVertexNormals();
-  const mesh = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ color, side: THREE.DoubleSide }));
+  const material = new THREE.MeshLambertMaterial({ color, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
+  const mesh = new THREE.Mesh(geo, material);
   mesh.receiveShadow = true;
   return mesh;
 }
@@ -212,6 +213,9 @@ export function buildHouse(data) {
   const bikes = []; // rideable bikes { object, box, x, z, yaw }
   const items = []; // every furniture item's overall footprint { minX.., rot, item, top }
   const spinners = []; // things that turn while you stand on them { object, box, x, z }
+  const climbs = []; // things you can climb up and sit on { x, z, y, reach, offset, type }
+  const slides = []; // slides you can go down { x0, z0, y0, x1, z1, y1 } (top -> bottom)
+  const swings = []; // swing seats { x, z, top, length, pivot, yaw }
 
   // Ground
   const ground = new THREE.Mesh(
@@ -272,11 +276,13 @@ export function buildHouse(data) {
     for (const w of wallLines.get(k)?.intervals ?? []) iv = subtract(iv, w);
     line.intervals = iv;
   }
+  // Fences listed in data.fences are inner fences you can jump over
+  const lowFenceLines = new Map();
   for (const f of data.fences ?? []) {
     const [ax, az] = f.from, [bx, bz] = f.to;
     const line = Math.abs(az - bz) < EPS
-      ? lineOf(fenceLines, 'h', az)
-      : lineOf(fenceLines, 'v', ax);
+      ? lineOf(lowFenceLines, 'h', az)
+      : lineOf(lowFenceLines, 'v', ax);
     const span = Math.abs(az - bz) < EPS ? [Math.min(ax, bx), Math.max(ax, bx)] : [Math.min(az, bz), Math.max(az, bz)];
     line.intervals = union([...line.intervals, span]);
   }
@@ -287,7 +293,7 @@ export function buildHouse(data) {
     const [x, z] = door.at;
     const half = door.width / 2;
     let placed = false;
-    for (const map of [wallLines, fenceLines]) {
+    for (const map of [wallLines, fenceLines, lowFenceLines]) {
       for (const [orient, c, along] of [['h', z, x], ['v', x, z]]) {
         const line = map.get(key(orient, c));
         if (!line || !line.intervals.some(([s, e]) => along >= s - EPS && along <= e + EPS)) continue;
@@ -402,13 +408,16 @@ export function buildHouse(data) {
       for (let i = 0; i < points.length - 1; i++) wallPiece(line.orient, line.c, points[i], points[i + 1], line.windows ?? []);
     }
   }
-  for (const line of fenceLines.values())
-    for (const [s, e] of line.intervals) {
-      if (e - s <= 0.02) continue;
-      const a = s - FENCE_T / 2, b = e + FENCE_T / 2;
-      lineBox(line.orient, line.c, a, b, 0, FENCE_H, FENCE_T, fenceMat);
-      fences.push(segmentOf(line.orient, line.c, a, b, FENCE_T / 2));
-    }
+  for (const [map, jumpable] of [[fenceLines, false], [lowFenceLines, true]])
+    for (const line of map.values())
+      for (const [s, e] of line.intervals) {
+        if (e - s <= 0.02) continue;
+        const a = s - FENCE_T / 2, b = e + FENCE_T / 2;
+        lineBox(line.orient, line.c, a, b, 0, FENCE_H, FENCE_T, fenceMat);
+        const seg = segmentOf(line.orient, line.c, a, b, FENCE_T / 2);
+        if (jumpable) seg.top = FENCE_H; // high enough feet clear it
+        fences.push(seg);
+      }
 
   for (const l of lintels)
     lineBox(l.orient, l.c, l.along - l.width / 2 - Z_GAP, l.along + l.width / 2 + Z_GAP, DOOR_H, H, WALL_T, sideMats(l.orient, l.c, l.along));
@@ -433,6 +442,13 @@ export function buildHouse(data) {
     };
     const footprint = { ...aabb(0, 0, f.size[0], f.size[1]), top: f.top, item, rot, size: f.size };
     items.push(footprint);
+    const toWorld = (lx, lz) => ({ x: x + lx * c + lz * sn, z: z - lx * sn + lz * c });
+    if (f.climb) climbs.push({ ...toWorld(0, 0), y: f.climb.y, reach: f.climb.reach, offset: f.climb.offset ?? 0, type: item.type });
+    for (const sl of f.slides ?? []) {
+      const a = toWorld(sl.x0, sl.z0), b = toWorld(sl.x1, sl.z1);
+      slides.push({ x0: a.x, z0: a.z, y0: sl.y0, x1: b.x, z1: b.z, y1: sl.y1 });
+    }
+    for (const sw of f.swings ?? []) swings.push({ ...toWorld(sw.x, sw.z), top: sw.top, length: sw.length, pivot: sw.pivot, yaw: rot });
     if (f.terrain) {
       // shaped ground (hills, big steps): sample its height function on a world grid
       const cell = 0.1;
@@ -481,6 +497,9 @@ export function buildHouse(data) {
     bikes,
     items,
     spinners,
+    climbs,
+    slides,
+    swings,
     bounds,
     colliders: { segments: [...walls, ...fences], boxes },
   };
