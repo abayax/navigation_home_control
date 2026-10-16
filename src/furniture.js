@@ -448,24 +448,27 @@ const builders = {
     return { size, colliders: [{ x: 0, z: 0, w: 0.4, d: 0.4, top: height + 0.1 }] };
   },
 
-  // Slide Mountain: a real grassy hill. Front (+z): gentle grass slope to walk up
-  // and slide down. East (+x): big stone steps. West (-x): steep side with three
-  // slides. North (-z): the raised "5-12" deck, level with the top. Shade sails above.
+  // Slide Mountain: a real grassy hill. Front (+z): grass slope to walk up and slide
+  // down, with a slide on each side. East (+x), seen from the east, left to right:
+  // a slide, round climbing stones, stone stairs. West (-x): steep grass. North (-z):
+  // the raised "5-12" deck, level with the top. Shade sails above.
   slideMountain({ size = [16, 17], height = 2.2, color = '#74c365' }, g) {
     const Ht = height, [w, d] = size;
-    const STEP_W = 0.88, STEPS = 5;
+    const STEP_W = 0.88, STEPS = 5, EAST = 2.2 + STEP_W * STEPS;
+    const STAIRS_Z = [-8, -4.85]; // north third of the east side
+    const steep = (dx) => Math.max(0, Ht * (1 - dx / 3)); // too steep to walk up
     const h = (x, z) => {
       if (z >= -8 && z <= -3 && x >= -7 && x <= 2.2) return Ht; // raised deck behind the top
       if (Math.abs(x) <= 2.2 && z > -3 && z <= 1.5) return Ht; // top
-      if (x > 2.2 && x <= 2.2 + STEP_W * STEPS && z >= -8 && z <= 1.5) {
-        const k = Math.floor((x - 2.2) / STEP_W); // big stone steps down to the east
-        return Math.max(0, Ht - ((k + 1) * Ht) / STEPS);
+      if (x > 2.2 && x <= EAST && z >= -8 && z <= 1.5) {
+        if (z <= STAIRS_Z[1]) return Math.max(0, Ht - ((Math.floor((x - 2.2) / STEP_W) + 1) * Ht) / STEPS); // stairs
+        return steep(x - 2.2); // climbing stones / slide
       }
       if (z > 1.5 && z <= 7.5 && Math.abs(x) <= 4) {
         // front grass slope, with steeper shoulders on both sides
         return Math.max(0, Ht * (1 - (z - 1.5) / 6) - Math.max(0, Math.abs(x) - 2.2) * 1.2);
       }
-      if (x < -2.2 && x >= -5.2 && z > -3 && z <= 1.5) return Math.max(0, Ht * (1 - (-x - 2.2) / 3)); // slide side
+      if (x < -2.2 && x >= -5.2 && z > -3 && z <= 1.5) return steep(-x - 2.2); // west side
       return 0;
     };
 
@@ -479,29 +482,43 @@ const builders = {
     turf.castShadow = turf.receiveShadow = true;
     g.add(turf);
 
-    // Big pale stones on each step
+    // Stone stairs (one section wide)
     for (let k = 0; k < STEPS - 1; k++) {
       const top = Ht - ((k + 1) * Ht) / STEPS;
-      for (let n = 0; n < 3; n++) {
-        const z0 = -8 + n * 3.2;
-        box(g, STEP_W - 0.06, top + 0.04, 3.0, n % 2 ? '#d6d2c4' : '#c9c4b5', 2.2 + STEP_W * (k + 0.5), (top + 0.04) / 2, z0 + 1.6);
-      }
+      box(g, STEP_W - 0.06, top + 0.04, STAIRS_Z[1] - STAIRS_Z[0] - 0.15, k % 2 ? '#d6d2c4' : '#c9c4b5',
+        2.2 + STEP_W * (k + 0.5), (top + 0.04) / 2, (STAIRS_Z[0] + STAIRS_Z[1]) / 2);
     }
 
-    // Three slides down the west side, from the top to the ground
-    [[-2.1, '#a7c957'], [-1.1, '#a7c957'], [-0.1, '#4cc9f0']].forEach(([z, c]) => {
-      const x0 = -2.2, x1 = -7.6, y0 = Ht + 0.05, y1 = 0.3;
-      const len = Math.hypot(x1 - x0, y1 - y0);
-      const pivot = new THREE.Group();
-      pivot.position.set((x0 + x1) / 2, (y0 + y1) / 2, z);
-      pivot.rotation.z = Math.atan2(y1 - y0, x1 - x0);
-      g.add(pivot);
-      box(pivot, len, 0.05, 0.75, c, 0, 0, 0);
-      box(pivot, len, 0.2, 0.05, c, 0, 0.1, 0.37);
-      box(pivot, len, 0.2, 0.05, c, 0, 0.1, -0.37);
-      cyl(g, 0.05, 0.05, 1.0, '#3a86ff', x0 + 0.1, Ht + 0.5, z - 0.4, 8); // entry posts
-      cyl(g, 0.05, 0.05, 1.0, '#3a86ff', x0 + 0.1, Ht + 0.5, z + 0.4, 8);
+    // Round climbing stones up the middle section: jump from one to the next
+    const colliders = [];
+    [[5.5, -3.8, 0.5], [4.7, -2.6, 0.95], [3.9, -3.7, 1.45], [3.05, -2.7, 1.9], [2.45, -3.6, 2.2]].forEach(([x, z, top], i) => {
+      rockMesh(g, 0.95, top, 0.95, '#bdb6a8', x, z, i + 3);
+      colliders.push({ x, z, w: 0.85, d: 0.85, top });
     });
+
+    // Slides: two down the front slope, one down the east side
+    const slideAt = (x0, z0, x1, z1, c) => {
+      const y0 = Ht + 0.05, y1 = 0.3;
+      const run = Math.hypot(x1 - x0, z1 - z0), len = Math.hypot(run, y1 - y0);
+      const pivot = new THREE.Group();
+      pivot.position.set((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
+      pivot.rotation.y = Math.atan2(-(z1 - z0), x1 - x0); // point the slide's +x downhill
+      g.add(pivot);
+      const tilt = new THREE.Group();
+      tilt.rotation.z = Math.atan2(y1 - y0, run);
+      pivot.add(tilt);
+      box(tilt, len, 0.05, 0.75, c, 0, 0, 0);
+      box(tilt, len, 0.2, 0.05, c, 0, 0.1, 0.37);
+      box(tilt, len, 0.2, 0.05, c, 0, 0.1, -0.37);
+      for (const s2 of [-1, 1]) {
+        // entry posts at the top
+        const px = x0 + (s2 * 0.4 * -(z1 - z0)) / run, pz = z0 + (s2 * 0.4 * (x1 - x0)) / run;
+        cyl(g, 0.05, 0.05, 1.0, '#3a86ff', px, Ht + 0.5, pz, 8);
+      }
+    };
+    slideAt(-1.7, 1.5, -1.7, 7.9, '#a7c957');
+    slideAt(1.7, 1.5, 1.7, 7.9, '#a7c957');
+    slideAt(2.2, -0.1, 7.6, -0.1, '#4cc9f0');
 
     // Shade sails on tall posts
     const sailMat = new THREE.MeshLambertMaterial({ color: '#c8b48e', side: THREE.DoubleSide });
@@ -520,14 +537,14 @@ const builders = {
         posts.push([px, pz]);
       }
     };
-    sail([-3.2, 4.8, -2.5], [3.8, 4.4, -1.0], [-0.5, 5.0, 4.2]);
+    sail([-3.2, 4.8, -2.5], [3.0, 4.4, 0.9], [-0.5, 5.0, 4.2]);
     sail([-7.4, 4.6, -8.2], [1.5, 4.9, -8.4], [-3.2, 4.8, -2.5]);
-    sail([1.5, 4.9, -8.4], [6.2, 4.5, -3.5], [3.8, 4.4, -1.0]);
+    sail([1.5, 4.9, -8.4], [6.4, 4.5, -5.6], [3.0, 4.4, 0.9]);
 
     return {
       size,
       terrain: h,
-      colliders: posts.map(([px, pz]) => ({ x: px, z: pz, w: 0.25, d: 0.25, top: 6 })),
+      colliders: [...colliders, ...posts.map(([px, pz]) => ({ x: px, z: pz, w: 0.25, d: 0.25, top: 6 }))],
     };
   },
 
@@ -624,9 +641,8 @@ const builders = {
     return size;
   },
 
-  boulder({ size = [1.2, 1], height = 0.6, color = '#9a9a9a' }, g) {
-    const rock = part(g, new THREE.SphereGeometry(0.5, 7, 5), color, 0, height / 2, 0);
-    rock.scale.set(size[0], height, size[1]);
+  boulder({ size = [1.2, 1], height = 0.6, color = '#9a9a9a', seed = 1 }, g) {
+    rockMesh(g, size[0], height, size[1], color, 0, 0, seed);
     return size;
   },
 
@@ -670,6 +686,23 @@ export function buildFurniture(item) {
   if (size && !Array.isArray(size)) ({ size, colliders = null, terrain = null } = size);
   const top = typeof TOPS[item.type] === 'function' ? TOPS[item.type](item) : TOPS[item.type] ?? 1;
   return { object, size, colliders, terrain, top, bouncy: BOUNCY.has(item.type) };
+}
+
+// A round, irregular rock from y = 0 to `height` (bumpy sphere, same shape for the same seed)
+function rockMesh(g, w, height, d, color, x, z, seed = 1) {
+  const geo = new THREE.SphereGeometry(0.5, 9, 7);
+  const pos = geo.attributes.position;
+  for (let i = 0; i < pos.count; i++) {
+    // bump depends on the vertex position (not its index) so the sphere's seam stays closed
+    const px = pos.getX(i), py = pos.getY(i), pz = pos.getZ(i);
+    const n = Math.sin(Math.round(px * 100) * 12.9898 + Math.round(py * 100) * 78.233 + Math.round(pz * 100) * 37.719 + seed * 11.1) * 43758.5453;
+    const k = 1 + (n - Math.floor(n) - 0.5) * 0.28;
+    pos.setXYZ(i, px * k, py * k, pz * k);
+  }
+  geo.computeVertexNormals();
+  const rock = part(g, geo, color, x, height / 2, z);
+  rock.scale.set(w, height, d);
+  return rock;
 }
 
 // Two A-frames (legs splayed front/back) joined by a top bar, centred, spanning x

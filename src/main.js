@@ -15,7 +15,8 @@ const WALK_SPEED = 2.4; // m/s
 const BACK_SPEED = 1.5;
 const RUN_FACTOR = 2.6;
 const RUN_ANIM_SPEED = WALK_SPEED * 1.15; // running: same leg rhythm as walking, longer stride
-const TURN_SPEED = Math.PI * 2.4; // rad/s -> a 90° turn takes ~0.2 s
+const TURN_STEP = Math.PI / 4; // one tap of left/right turns 45° (taps add up)
+const TURN_SPEED = Math.PI * 1.2; // rad/s -> a 45° turn takes ~0.2 s
 const STEER_RATE = 2.4; // rad/s at full drag sideways
 const CAM_DIST = 3.4;
 const CAM_HEIGHT = 1.9; // stays below door lintels (2.1 m)
@@ -277,7 +278,7 @@ function update(dt) {
   const mapDir = input.mapDir;
   const mapLen = Math.min(1, Math.hypot(mapDir.x, mapDir.z));
   if (mapControls) {
-    input.consumeTurns(); // no 90° turns in the map view
+    input.consumeTurns(); // no step turns in the map view
     if (mapLen > 0.05) player.targetYaw = player.yaw + angleDiff(player.yaw, Math.atan2(mapDir.x, mapDir.z));
   } else {
     // Smooth steering from dragging the screen
@@ -285,7 +286,7 @@ function update(dt) {
       player.yaw += input.steer * STEER_RATE * dt;
       player.targetYaw += input.steer * STEER_RATE * dt;
     }
-    player.targetYaw += input.consumeTurns() * (Math.PI / 2);
+    player.targetYaw += input.consumeTurns() * TURN_STEP;
   }
   const diff = player.targetYaw - player.yaw;
   const step = TURN_SPEED * dt;

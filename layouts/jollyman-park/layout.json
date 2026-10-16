@@ -2,7 +2,7 @@
   "name": "Jollyman Park Playground",
   "units": "meters. x grows to the east, z grows to the south. rect = [x0, z0, x1, z1]",
   "source": "source.png",
-  "notes": "Traced from the playground's concept sign (no measurements). Assumed ~70 x 55 m (about an acre) with a 14 m strip of park lawn around it. Zones are rectangles approximating the sign's curved areas; the white paths are smooth curves through traced points. Parking lot left out. Restroom: two 3.5 x 4 m bathrooms (toilet, sink, diaper station) with a fountain between the doors; second fountain by the west entrance. Slide Mountain from photos: 2.2 m hill with a grass slope (front), big stone steps (east, facing the restroom), three slides (west), a raised '5-12' deck behind at the same height, and shade sails. Forest House: A-frame on a 1.2 m deck with stairs and a double slide. Globe spinner; swing set by the spinner has two adaptive seats.",
+  "notes": "Traced from the playground's concept sign (no measurements). Assumed ~70 x 55 m (about an acre) with a 14 m strip of park lawn around it. Zones are rectangles approximating the sign's curved areas; the white paths are smooth curves through traced points. Parking lot left out. Restroom outside the playground fence (east park strip): two 4 x 3.5 m bathrooms (toilet, sink, diaper station), doors facing west with a fountain between them; second fountain by the west entrance. Slide Mountain from photos: 2.2 m hill with a grass slope and two slides facing the gathering area; east side (facing the restroom) has, from left to right, a slide, climbing stones and stone stairs; raised '5-12' deck behind at the same height; shade sails. Blue rope climber with two benches facing it; big stone in the sand pit. Forest House: A-frame on a 1.2 m deck with stairs and a double slide. Globe spinner; swing set by the spinner has two adaptive seats.",
   "spawn": {
     "at": [
       47.0,
@@ -50,31 +50,11 @@
     },
     {
       "name": "Garden",
-      "rects": [
-        [
-          70.7,
-          14.0,
-          84.0,
-          16.5
-        ],
-        [
-          70.7,
-          20.5,
-          84.0,
-          37.8
-        ],
-        [
-          70.7,
-          16.5,
-          73.0,
-          20.5
-        ],
-        [
-          80.0,
-          16.5,
-          84.0,
-          20.5
-        ]
+      "rect": [
+        70.7,
+        14.0,
+        84.0,
+        37.8
       ],
       "floor": "#8bd16a",
       "pattern": "grass",
@@ -189,7 +169,25 @@
           84.0,
           14.0,
           98.0,
+          15.0
+        ],
+        [
+          84.0,
+          22.0,
+          98.0,
           69.0
+        ],
+        [
+          84.0,
+          15.0,
+          93.0,
+          22.0
+        ],
+        [
+          97.0,
+          15.0,
+          98.0,
+          22.0
         ]
       ],
       "floor": "#7cc45f",
@@ -199,10 +197,10 @@
     {
       "name": "Restroom 1",
       "rect": [
-        73.0,
-        16.5,
-        76.5,
-        20.5
+        93.0,
+        15.0,
+        97.0,
+        18.5
       ],
       "floor": "#d9e2ec",
       "pattern": "tile"
@@ -210,10 +208,10 @@
     {
       "name": "Restroom 2",
       "rect": [
-        76.5,
-        16.5,
-        80.0,
-        20.5
+        93.0,
+        18.5,
+        97.0,
+        22.0
       ],
       "floor": "#d9e2ec",
       "pattern": "tile"
@@ -243,15 +241,15 @@
     },
     {
       "at": [
-        74.75,
-        20.5
+        93.0,
+        16.75
       ],
       "width": 0.95
     },
     {
       "at": [
-        78.25,
-        20.5
+        93.0,
+        20.25
       ],
       "width": 0.95
     }
@@ -413,23 +411,6 @@
     {
       "points": [
         [
-          76.5,
-          29.4
-        ],
-        [
-          76.5,
-          25.0
-        ],
-        [
-          76.5,
-          22.2
-        ]
-      ],
-      "width": 2.0
-    },
-    {
-      "points": [
-        [
           58.5,
           41.0
         ],
@@ -511,11 +492,11 @@
           6.0
         ],
         [
-          91.0,
+          90.0,
           7.0
         ],
         [
-          92.0,
+          90.5,
           41.5
         ],
         [
@@ -615,7 +596,8 @@
         6,
         6
       ],
-      "height": 4.5
+      "height": 4.5,
+      "color": "#3a86ff"
     },
     {
       "type": "slideMountain",
@@ -683,55 +665,56 @@
     {
       "type": "toilet",
       "at": [
-        73.55,
-        17.45
-      ],
-      "rot": 90
-    },
-    {
-      "type": "sink",
-      "at": [
-        76.05,
-        17.45
+        96.45,
+        15.8
       ],
       "rot": -90
     },
     {
+      "type": "sink",
+      "at": [
+        94.6,
+        15.45
+      ]
+    },
+    {
       "type": "diaperStation",
       "at": [
-        74.9,
-        16.95
-      ]
+        95.6,
+        18.07
+      ],
+      "rot": 180
     },
     {
       "type": "toilet",
       "at": [
-        79.45,
-        17.45
+        96.45,
+        21.7
       ],
       "rot": -90
     },
     {
       "type": "sink",
       "at": [
-        76.95,
-        17.45
+        94.6,
+        21.55
       ],
-      "rot": 90
+      "rot": 180
     },
     {
       "type": "diaperStation",
       "at": [
-        78.1,
-        16.95
+        95.6,
+        18.93
       ]
     },
     {
       "type": "fountain",
       "at": [
-        76.5,
-        21.25
-      ]
+        92.45,
+        18.5
+      ],
+      "rot": -90
     },
     {
       "type": "fountain",
@@ -854,6 +837,36 @@
         0.4
       ],
       "rot": 180
+    },
+    {
+      "type": "boulder",
+      "at": [
+        21.44,
+        48.59
+      ],
+      "size": [
+        2.2,
+        1.9
+      ],
+      "height": 0.9,
+      "color": "#cbb89a",
+      "seed": 5
+    },
+    {
+      "type": "bench",
+      "at": [
+        39.1,
+        36.8
+      ],
+      "rot": 180
+    },
+    {
+      "type": "bench",
+      "at": [
+        33.9,
+        29.6
+      ],
+      "rot": 90
     },
     {
       "type": "bench",
@@ -1502,32 +1515,18 @@
     {
       "type": "tree",
       "at": [
-        95.96,
-        15.87
-      ],
-      "kind": "pine"
-    },
-    {
-      "type": "tree",
-      "at": [
-        94.52,
-        23.78
-      ],
-      "kind": "pine"
-    },
-    {
-      "type": "tree",
-      "at": [
         95.54,
         31.12
-      ]
+      ],
+      "kind": "pine"
     },
     {
       "type": "tree",
       "at": [
         94.66,
         39.7
-      ]
+      ],
+      "kind": "pine"
     },
     {
       "type": "tree",
@@ -1541,8 +1540,7 @@
       "at": [
         95.64,
         59.36
-      ],
-      "kind": "pine"
+      ]
     },
     {
       "type": "tree",
@@ -1556,15 +1554,15 @@
       "at": [
         94.06,
         72.16
-      ]
+      ],
+      "kind": "pine"
     },
     {
       "type": "tree",
       "at": [
         95.39,
         80.85
-      ],
-      "kind": "pine"
+      ]
     },
     {
       "type": "tree",
@@ -1578,15 +1576,15 @@
       "at": [
         76.95,
         79.44
-      ]
+      ],
+      "kind": "pine"
     },
     {
       "type": "tree",
       "at": [
         69.4,
         79.41
-      ],
-      "kind": "pine"
+      ]
     },
     {
       "type": "tree",
@@ -1600,7 +1598,8 @@
       "at": [
         53.54,
         80.6
-      ]
+      ],
+      "kind": "pine"
     },
     {
       "type": "tree",
@@ -1628,8 +1627,7 @@
       "at": [
         21.93,
         79.79
-      ],
-      "kind": "pine"
+      ]
     },
     {
       "type": "tree",
@@ -1643,23 +1641,22 @@
       "at": [
         5.38,
         79.3
-      ]
+      ],
+      "kind": "pine"
     },
     {
       "type": "tree",
       "at": [
         3.61,
         72.76
-      ],
-      "kind": "pine"
+      ]
     },
     {
       "type": "tree",
       "at": [
         3.96,
         64.41
-      ],
-      "kind": "pine"
+      ]
     },
     {
       "type": "tree",
@@ -1674,7 +1671,8 @@
       "at": [
         3.94,
         50.28
-      ]
+      ],
+      "kind": "pine"
     },
     {
       "type": "tree",
@@ -1696,23 +1694,22 @@
       "at": [
         2.59,
         24.32
-      ]
+      ],
+      "kind": "pine"
     },
     {
       "type": "tree",
       "at": [
         2.52,
         16.17
-      ],
-      "kind": "pine"
+      ]
     },
     {
       "type": "tree",
       "at": [
         3.82,
         9.16
-      ],
-      "kind": "pine"
+      ]
     }
   ]
 }

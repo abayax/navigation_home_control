@@ -28,7 +28,7 @@ Options: `--layout office` opens straight into a layout, `--no-browser` just ser
 |---|---|---|
 | Walk forward | ↑ (or W), hold | ▲ button, hold |
 | Walk back toward the camera (see her face) | ↓ (or S), hold | ▼ button, hold |
-| Turn 90° left / right | ← / → (or A / D), one tap = 90° | ↰ / ↱ buttons |
+| Turn 45° left / right | ← / → (or A / D), one tap = 45° | ↰ / ↱ buttons |
 | Walk + steer smoothly | drag on the view with the mouse | drag on the view like a joystick: up = forward, down = back, left/right = steer |
 | Jump | Space | ⤒ button |
 | Get on / off the bike (stand next to it) | Space | ⤒ button |

@@ -78,11 +78,11 @@ Turn a floor plan image or PDF into `layouts/<id>/layout.json`, register it, and
 | swingSet / nestSwing | [6, 1.8] / [6, 2.4] | wood-log A-frame swings; `seats`: a count or a list of `belt` / `bucket` / `adaptive`; only the end posts are solid |
 | spinner | radius 1.3 | globe spinner; step onto its base and it turns with you |
 | ropeClimber | [6, 6] | rope pyramid, `height` 4.5; only the mast is solid |
-| slideMountain | [16, 17], `height` 2.2 | shaped hill: grass slope at +z (walk up, slide down), stone steps at +x, 3 slides at -x, raised deck at -z, shade sails |
+| slideMountain | [16, 17], `height` 2.2 | shaped hill: grass slope + 2 slides at +z; at +x a slide, climbing stones and stone stairs; steep grass at -x; raised deck at -z; shade sails |
 | playHouse | [3.2, 2.8] | A-frame playhouse on a 1.2 m deck, open front at +z, stairs at +x, double slide at -x |
 | fountain / diaperStation | [0.75, 0.45] / [0.9, 0.5] | drinking fountain; wall-mounted baby changing table (front +z) |
 | picnicTable / bench | [1.8, 0.8] / [1.6, 0.45] | benches face +z; NPCs sit on benches |
-| boulder | [1.2, 1] | climbable rock, `height` |
+| boulder | [1.2, 1] | round irregular rock you can climb, `height`, `seed` changes its shape |
 | rug / ball | walk-over | rug uses `radius` (also good for round coloured ground patches) |
 | mat | walk-over | flat rectangle, `size` + `color`: exercise mat, gravel, lawn or concrete patch |
 | flowers | walk-over | flower bed, `size` |

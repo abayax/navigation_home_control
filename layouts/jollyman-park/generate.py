@@ -33,8 +33,7 @@ rooms = [
     dict(name="Nest Swings",      rect=R(0, 0, 18, N),     floor="#9ad18b", pattern="rubber"),
     dict(name="Climber",          rect=R(18, 0, 37.1, N),  floor="#7cc95f", pattern="rubber"),
     dict(name="Slide Mountain",   rect=R(37.1, 0, 56.7, N), floor="#8bd16a", pattern="grass"),
-    dict(name="Garden", rects=[R(56.7, 0, W, 2.5), R(56.7, 6.5, W, N), R(56.7, 2.5, 59, 6.5), R(66, 2.5, W, 6.5)],
-         floor="#8bd16a", pattern="grass"),
+    dict(name="Garden",           rect=R(56.7, 0, W, N),   floor="#8bd16a", pattern="grass"),
     dict(name="Sand Play",        rect=R(0, N, 18, D),     floor="#a9d98f", pattern="grass"),
     dict(name="Forest House",     rect=R(18, N, 35, D),    floor="#9ad18b", pattern="rubber"),
     dict(name="Gathering Area",   rect=R(35, N, 47, 39),   floor="#e3cfa8", pattern="rubber"),
@@ -42,16 +41,18 @@ rooms = [
     dict(name="Picnic",           rect=R(57, N, W, 39),    floor="#d8d2c0", pattern="concrete"),
     dict(name="Swings",           rect=R(35, 39, 55, D),   floor="#a8dcc8", pattern="rubber"),
     dict(name="Big Kids Lawn",    rect=R(55, 39, W, D),    floor="#8bd16a", pattern="grass"),
-    dict(name="Park", rects=[[0, 0, W + 2 * M, M], [0, M + D, W + 2 * M, D + 2 * M],
-                             [0, M, M, M + D], [M + W, M, W + 2 * M, M + D]],
+    # park lawn around the playground, leaving room for the restroom building (east side)
+    dict(name="Park", rects=[[0, 0, W + 2 * M, M], [0, M + D, W + 2 * M, D + 2 * M], [0, M, M, M + D],
+                             R(W, 0, W + M, 1), R(W, 8, W + M, D), R(W, 1, 79, 8), R(83, 1, W + M, 8)],
          floor="#7cc45f", pattern="grass"),
 ]
 for r in rooms:
     r["outdoor"] = True
-# Restroom: a single-story building with two separate bathrooms, doors facing the playground
+# Restroom: single-story building outside the playground fence (park, east side), two
+# separate bathrooms with doors facing west toward the walking path
 rooms += [
-    dict(name="Restroom 1", rect=R(59, 2.5, 62.5, 6.5), floor="#d9e2ec", pattern="tile"),
-    dict(name="Restroom 2", rect=R(62.5, 2.5, 66, 6.5), floor="#d9e2ec", pattern="tile"),
+    dict(name="Restroom 1", rect=R(79, 1, 83, 4.5), floor="#d9e2ec", pattern="tile"),
+    dict(name="Restroom 2", rect=R(79, 4.5, 83, 8), floor="#d9e2ec", pattern="tile"),
 ]
 
 # Fence around the playground, with three entrance gates
@@ -62,8 +63,8 @@ doors = [
     {"at": [M, west_gate[1]], "width": 3},
     {"at": [M + W, east_gate[1]], "width": 3},
     {"at": [north_gate[0], M], "width": 3},
-    {"at": L(60.75, 6.5), "width": 0.95},   # restroom 1
-    {"at": L(64.25, 6.5), "width": 0.95},   # restroom 2
+    {"at": L(79, 2.75), "width": 0.95},   # restroom 1
+    {"at": L(79, 6.25), "width": 0.95},   # restroom 2
 ]
 
 paths = [
@@ -74,8 +75,6 @@ paths = [
     dict(points=[P(210, 300), P(215, 240), P(235, 175), P(280, 155), P(350, 148), L(35.4, 8.6), L(36.0, 11.2)], width=2.2),
     # north path toward the parking lot
     dict(points=[[north_gate[0], M - 6], P(515, 95), L(52, 2.6), L(52.6, 9), L(53.6, 15.5), P(545, 250)], width=2.2),
-    # from the main path up to the restroom doors
-    dict(points=[L(62.5, 15.4), L(62.5, 11), L(62.5, 8.2)], width=2.0),
     # little paths to the swings and the forest house
     dict(points=[L(44.5, 27), L(45.2, 33), L(46.2, 38.5)], width=1.6),
     dict(points=[L(24, 27.2), L(26, 30.5), L(26.7, 33.2)], width=1.6),
@@ -83,7 +82,7 @@ paths = [
     dict(points=[L(40.5 + 4.6 * math.cos(a), 31 + 4.6 * math.sin(a)) for a in [i * math.pi / 4 for i in range(8)]],
          width=1.4, color="#d9c49c", closed=True),
     # walking loop around the playground in the park
-    dict(points=[L(-7, -7), L(W / 2, -8), L(W + 7, -7), L(W + 8, D / 2), L(W + 7, D + 7), L(W / 2, D + 8),
+    dict(points=[L(-7, -7), L(W / 2, -8), L(W + 6, -7), L(W + 6.5, D / 2), L(W + 7, D + 7), L(W / 2, D + 8),
                  L(-7, D + 7), L(-8, D / 2)], width=2.4, closed=True),
 ]
 
@@ -101,7 +100,7 @@ add("rug", L(40.5, 31), radius=3.6, color="#cdb68e")    # gathering circle
 
 # Equipment, traced from the sign
 add("nestSwing", P(140, 190), size=[6, 2.4])
-add("ropeClimber", P(280, 245), size=[6, 6], height=4.5)
+add("ropeClimber", P(280, 245), size=[6, 6], height=4.5, color="#3a86ff")
 add("slideMountain", P(455, 190), size=[16, 17], height=2.2)
 add("playHouse", P(295, 385), rot=180, size=[3.2, 2.8])
 add("spinner", P(545, 340), radius=1.3)
@@ -109,13 +108,13 @@ add("swingSet", L(49.6, 42.6), size=[4.4, 1.8], seats=["adaptive", "adaptive"]) 
 add("swingSet", L(43.0, 47.6), size=[6, 1.8], seats=["belt", "belt", "bucket"])
 
 # Restroom fixtures: toilet, sink and diaper station in each bathroom; fountain out front
-add("toilet", L(59.55, 3.45), rot=90)
-add("sink", L(62.05, 3.45), rot=-90)
-add("diaperStation", L(60.9, 2.95))
-add("toilet", L(65.45, 3.45), rot=-90)
-add("sink", L(62.95, 3.45), rot=90)
-add("diaperStation", L(64.1, 2.95))
-add("fountain", L(62.5, 7.25))                  # between the two restroom doors
+add("toilet", L(82.45, 1.8), rot=-90)
+add("sink", L(80.6, 1.45))
+add("diaperStation", L(81.6, 4.075), rot=180)
+add("toilet", L(82.45, 7.7), rot=-90)
+add("sink", L(80.6, 7.55), rot=180)
+add("diaperStation", L(81.6, 4.925))
+add("fountain", L(78.45, 4.5), rot=-90)         # between the two restroom doors
 add("fountain", L(1.2, 23.2), rot=90)           # by the west entrance, between Sand Play and Nest Swings
 add("table", L(11, 31), size=[1.6, 0.8], color="#e9c46a")   # raised sand table (wheelchair height)
 
@@ -125,7 +124,12 @@ for x, z in [(60, 27.2), (65.5, 27.6), (62.5, 33.5)]:
     add("bench", L(x, z - 0.75), size=[1.8, 0.4])
     add("bench", L(x, z + 0.75), size=[1.8, 0.4], rot=180)
 
+# Big round stone in the middle of the sand pit
+add("boulder", P(118, 378), size=[2.2, 1.9], height=0.9, color="#cbb89a", seed=5)
+
 # Benches for grown-ups
+add("bench", L(25.1, 22.8), rot=180)   # facing the climber
+add("bench", L(19.9, 15.6), rot=90)    # facing the climber
 add("bench", L(36.4, 31), rot=90)
 add("bench", L(44.6, 31), rot=-90)
 add("bench", L(40.5, 36.6), rot=180)
@@ -167,6 +171,8 @@ gates_local = [(0, west_gate[1] - M), (W, east_gate[1] - M), (north_gate[0] - M,
 for x, z in ring(3.2, 7) + ring(11, 8):
     if any(math.hypot(x - gx, z - gz) < 6 for gx, gz in gates_local):
         continue
+    if 76.5 < x < 85 and -1.5 < z < 10.5:  # keep clear of the restroom building
+        continue
     kind = "pine" if random.random() < 0.35 else "round"
     add("tree", L(x, z), **({"kind": "pine"} if kind == "pine" else {}))
 
@@ -176,10 +182,12 @@ layout = {
     "source": "source.png",
     "notes": ("Traced from the playground's concept sign (no measurements). Assumed ~70 x 55 m (about an acre) with a 14 m "
               "strip of park lawn around it. Zones are rectangles approximating the sign's curved areas; the white paths "
-              "are smooth curves through traced points. Parking lot left out. Restroom: two 3.5 x 4 m bathrooms (toilet, sink, diaper station) with "
-              "a fountain between the doors; second fountain by the west entrance. Slide Mountain from photos: 2.2 m hill "
-              "with a grass slope (front), big stone steps (east, facing the restroom), three slides (west), a raised "
-              "'5-12' deck behind at the same height, and shade sails. Forest House: A-frame on a 1.2 m deck with stairs "
+              "are smooth curves through traced points. Parking lot left out. Restroom outside the playground fence (east park strip): two 4 x 3.5 m "
+              "bathrooms (toilet, sink, diaper station), doors facing west with a fountain between them; second fountain "
+              "by the west entrance. Slide Mountain from photos: 2.2 m hill with a grass slope and two slides facing the "
+              "gathering area; east side (facing the restroom) has, from left to right, a slide, climbing stones and "
+              "stone stairs; raised '5-12' deck behind at the same height; shade sails. Blue rope climber with two "
+              "benches facing it; big stone in the sand pit. Forest House: A-frame on a 1.2 m deck with stairs "
               "and a double slide. Globe spinner; swing set by the spinner has two adaptive seats."),
     "spawn": {"at": L(33, 28.5), "facing": "north"},
     "exteriorWall": "#c7c9c4",

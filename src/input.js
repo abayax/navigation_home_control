@@ -1,8 +1,8 @@
 // Keyboard + touch input.
 //   ↑ / W        walk forward (hold); double-tap and hold to run
 //   ↓ / S        walk backward (hold)
-//   ← / A        turn 90° left  (each tap; taps queue up)
-//   → / D        turn 90° right (each tap)
+//   ← / A        turn 45° left  (each tap; taps queue up)
+//   → / D        turn 45° right (each tap)
 //   Space        jump
 //   Shift        run (also: double-tap forward)
 //   M            toggle map view (in the map view the arrows move up/down/left/right on the map)
@@ -142,7 +142,7 @@ export class Input {
       this.touchBack = v;
       if (v) this.#dirPressed('down');
     });
-    // Turn buttons: each press = one 90° turn; held = left/right in the map view
+    // Turn buttons: each press = one 45° turn; held = left/right in the map view
     hold('btn-left', (v) => {
       this.touchLeft = v;
       if (v) { this.pendingTurns += 1; this.#dirPressed('left'); }
